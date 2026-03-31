@@ -1,0 +1,17 @@
+# Manipulación de Datos
+pandas==2.2.0
+numpy==1.26.4
+openpyxl==3.1.2  # Crucial para leer tus archivos Excel
+
+# Machine Learning
+scikit-learn==1.4.0
+xgboost==2.0.3
+
+# Entorno de Exploración
+jupyter==1.0.0
+ipykernel==6.29.2
+
+# Visualización / Dashboard
+streamlit==1.31.0
+matplotlib==3.8.2
+seaborn==0.13.2

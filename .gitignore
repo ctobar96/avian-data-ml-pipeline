@@ -23,3 +23,6 @@ TestResults.xml
 
 #Ignore data files
 .data/ 
+
+#Ignorar entorno virtual de Python
+venv/
