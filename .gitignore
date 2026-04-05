@@ -26,3 +26,7 @@ TestResults.xml
 
 #Ignorar entorno virtual de Python
 venv/
+
+# Ignorar extension .xls y .csv
+*.xls
+*.csv
