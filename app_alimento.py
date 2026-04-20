@@ -8,7 +8,7 @@ import seaborn as sns
 # ==============================================================================
 st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide")
 
-st.title("📊 Dashboard de Producción de Alimento (Planta)")
+st.title("📊 Dashboard de Producción de Alimento")
 st.markdown("Monitorización del volumen de alimento fabricado y su distribución por lotes de destino.")
 
 # ==============================================================================
@@ -41,10 +41,28 @@ try:
     # ==============================================================================
     # 4. Construcción del Dashboard (KPIs y Gráficos)
     # ==============================================================================
+# --- Extracción automática del Mes en Español ---
+    meses_espanol = {
+        1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+        5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+        9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+    }
     
-    # --- KPI Principal ---
-    total_kilos = df_creacion['Cantidad'].sum()
-    st.metric(label="Total de Alimento Creado (Kg)", value=f"{int(total_kilos):,}".replace(',', '.'))
+    # Tomamos la primera fecha
+    fecha_referencia = df_creacion['Efectiva'].iloc[0]
+    
+    # Extraemos el número del mes y el año, y lo armamos en español
+    mes_actual = f"{meses_espanol[fecha_referencia.month]} {fecha_referencia.year}"
+    
+      # --- KPI Principal ---
+    col1, col2 = st.columns(2) # Dividir en dos columnas para mejor presentación
+    
+    with col1:
+        st.metric(label="🗓️ Mes de Producción", value=mes_actual)
+    
+    with col2:
+        total_kilos = df_creacion['Cantidad'].sum()
+        st.metric(label="⚖️ Total de Alimento Creado (Kg)", value=f"{int(total_kilos):,}".replace(',', '.'))
     
     st.markdown("---")
     
