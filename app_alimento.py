@@ -64,7 +64,7 @@ if archivo_subido is not None:
         col_graf1, col_graf2 = st.columns(2)
         
         with col_graf1:
-            st.subheader("Producción según Sector")
+            st.subheader("Distribución del Total de Alimento Producido según Sector")
             produccion_por_lote = df_creacion.groupby('Lote/Serie')['Cantidad'].sum().reset_index()
             produccion_por_lote = produccion_por_lote.sort_values(by='Cantidad', ascending=False)
 
@@ -91,7 +91,8 @@ if archivo_subido is not None:
 
         with col_graf2:
             st.subheader("Consumo por Materia Prima")
-            df_consumo = df_filtrado[df_filtrado['Tipo Trans'] == 'ISS-WO'].copy()
+            df_consumo = df_filtrado[(df_filtrado['Tipo Trans'] == 'ISS-WO')
+             & (df_filtrado['Lín Producto'] == 15)].copy()
             df_consumo['Cantidad'] = df_consumo['Cantidad'].abs()
             
             consumo_insumos = df_consumo.groupby('Descripción')['Cantidad'].sum().reset_index()
@@ -140,7 +141,7 @@ f_col1, f_col2, f_col3 = st.columns(3)
 
 with f_col1:
     st.markdown("#### **Desarrollado por:**")
-    st.write("👨‍💻 **Cristian**")
+    st.write("👨‍💻 **Cristian Tobar Morales**")
     st.caption("Magíster en Data Science")
 
 with f_col2:
@@ -156,7 +157,7 @@ with f_col3:
 st.markdown(
     """
     <div style='text-align: center; color: grey; padding-top: 20px;'>
-        <p>© 2026 <b>Cristian</b>. <br> 
+        <p>© 2026 <b>Cristian Tobar Morales</b>. <br> 
         Todos los derechos reservados. | Esta aplicación es de uso estrictamente profesional y privado.</p>
     </div>
     """, 
