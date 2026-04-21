@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib.ticker import FuncFormatter
 
 # ==============================================================================
 # 1. Configuración de la página
@@ -9,14 +10,12 @@ import seaborn as sns
 st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide")
 
 st.title("📊 Dashboard de Producción de Alimento")
-st.markdown("Monitorización del volumen de alimento fabricado y su distribución por lotes de destino.")
+st.markdown("Monitorización del volumen de alimento fabricado y consumo de materias primas.")
 
 # ==============================================================================
-# 2. Subida y Carga de Datos Dinámica
+# 2. Carga de Datos Dinámica
 # ==============================================================================
-# Este widget permite al usuario cargar un archivo Excel desde su máquina local.
 archivo_subido = st.file_uploader("Sube tu archivo Excel de producción de alimento", type=["xls", "xlsx"])
-
 
 @st.cache_data
 def cargar_datos(archivo):
@@ -24,7 +23,6 @@ def cargar_datos(archivo):
 
 if archivo_subido is not None:
     try:
-        # Cargar los datos utilizando la función definida
         df = cargar_datos(archivo_subido)
 
         # ==============================================================================
@@ -33,33 +31,25 @@ if archivo_subido is not None:
         columnas_interes = ['Efectiva', 'Tipo Trans', 'Lín Producto', 'Numero articulo', 'Descripción', 'Cantidad', 'Lote/Serie']
         df_filtrado = df[columnas_interes].copy()
 
-        # Filtros de creación de alimento
-        transaccion_creacion = ['RCT-WO']
-        linea_producto_alimento = [15]
-
         df_creacion = df_filtrado[
-            df_filtrado['Tipo Trans'].isin(transaccion_creacion) & 
-            df_filtrado['Lín Producto'].isin(linea_producto_alimento)
+            (df_filtrado['Tipo Trans'] == 'RCT-WO') & 
+            (df_filtrado['Lín Producto'] == 15)
         ].copy()
 
         # ==============================================================================
         # 4. Construcción del Dashboard (KPIs y Gráficos)
         # ==============================================================================
-        # --- Extracción automática del Mes en Español ---
         meses_espanol = {
             1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
             5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
             9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
         }
         
-        # Tomamos la primera fecha
         fecha_referencia = df_creacion['Efectiva'].iloc[0]
-        
-        # Extraemos el número del mes y el año, y lo armamos en español
         mes_actual = f"{meses_espanol[fecha_referencia.month]} {fecha_referencia.year}"
         
-        # --- KPI Principal ---
-        col1, col2 = st.columns(2) # Dividir en dos columnas para mejor presentación
+        # --- KPIs ---
+        col1, col2 = st.columns(2)
         
         with col1:
             st.metric(label="🗓️ Mes de Producción", value=mes_actual)
@@ -70,45 +60,25 @@ if archivo_subido is not None:
         
         st.markdown("---")
         
-        # ==============================================================================
-        # 4. Visualización de Gráficos (Lado a Lado)
-        # ==============================================================================
-        # Creamos dos columnas para los gráficos principales
+        # --- Gráficos Lado a Lado ---
         col_graf1, col_graf2 = st.columns(2)
         
-         # --- COLUMNA 1: PRODUCCIÓN POR SECTOR ---
         with col_graf1:
-    
-            # --- Preparación de datos para el gráfico ---
+            st.subheader("Producción según Sector")
             produccion_por_lote = df_creacion.groupby('Lote/Serie')['Cantidad'].sum().reset_index()
             produccion_por_lote = produccion_por_lote.sort_values(by='Cantidad', ascending=False)
 
-            # --- Renderizado del Gráfico ---
-            st.subheader("Distribución del Total de Alimento Producido según Sector")
-            
             fig1, ax1 = plt.subplots(figsize=(8, 6))
-            sns.barplot(
-                data=produccion_por_lote, 
-                x='Lote/Serie', 
-                y='Cantidad', 
-                hue='Lote/Serie', 
-                palette='magma', 
-                legend=False,
-                ax=ax1 # Es importante pasar el 'ax' en Streamlit
-            )
+            sns.barplot(data=produccion_por_lote, x='Lote/Serie', y='Cantidad', hue='Lote/Serie', palette='magma', legend=False, ax=ax1)
 
-            # Ajustes visuales (Margen superior y formato de miles)
             ax1.set_ylim(0, ax1.get_ylim()[1] * 1.20)
-            from matplotlib.ticker import FuncFormatter
             ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
             
-            # Añadir etiquetas sobre las barras
             for p in ax1.patches:
-                ax1.annotate(f"{int(p.get_height()):,}".replace(',', '.'), 
-                            (p.get_x() + p.get_width() / 2., p.get_height()), 
-                            ha='center', va='bottom', 
-                            fontsize=9, color='black', xytext=(0, 5), 
-                            textcoords='offset points')
+                if p.get_height() > 0:
+                    ax1.annotate(f"{int(p.get_height()):,}".replace(',', '.'), 
+                                (p.get_x() + p.get_width() / 2., p.get_height()), 
+                                ha='center', va='bottom', fontsize=9, color='black', xytext=(0, 5), textcoords='offset points')
 
             plt.xlabel('Sector', fontsize=12)
             plt.ylabel('Alimento Fabricado (kg)', fontsize=12)
@@ -116,14 +86,11 @@ if archivo_subido is not None:
             plt.grid(axis='y', linestyle='--', alpha=0.6)
             plt.tight_layout()
 
-            # Inyectar el gráfico en la web
             st.pyplot(fig1)
+            plt.close(fig1) # <--- CLAVE PARA EVITAR EL COLAPSO DEL SERVIDOR
 
-            # --- COLUMNA 2: CONSUMO DE MATERIAS PRIMAS ---
         with col_graf2:
             st.subheader("Consumo por Materia Prima")
-            
-            # Preparación de datos (ISS-WO)
             df_consumo = df_filtrado[df_filtrado['Tipo Trans'] == 'ISS-WO'].copy()
             df_consumo['Cantidad'] = df_consumo['Cantidad'].abs()
             
@@ -131,12 +98,8 @@ if archivo_subido is not None:
             consumo_insumos = consumo_insumos.sort_values(by='Cantidad', ascending=False)
 
             fig2, ax2 = plt.subplots(figsize=(8, 6))
-            sns.barplot(
-                data=consumo_insumos, x='Descripción', y='Cantidad', 
-                hue='Descripción', palette='viridis', legend=False, ax=ax2
-            )
+            sns.barplot(data=consumo_insumos, x='Descripción', y='Cantidad', hue='Descripción', palette='viridis', legend=False, ax=ax2)
 
-            # Ajustes visuales (Margen superior y formato de miles)
             ax2.set_ylim(0, ax2.get_ylim()[1] * 1.20)
             ax2.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
 
@@ -146,31 +109,38 @@ if archivo_subido is not None:
                                 (p.get_x() + p.get_width() / 2., p.get_height()), 
                                 ha='center', va='bottom', fontsize=9, xytext=(0, 5), textcoords='offset points')
 
+            plt.xlabel('Materia Prima', fontsize=12)
+            plt.ylabel('Kilos (kg)', fontsize=12)
             plt.xticks(rotation=45, ha='right')
-            plt.ylabel('Kilos (kg)')
+            plt.grid(axis='y', linestyle='--', alpha=0.6)
+            plt.tight_layout()
+            
             st.pyplot(fig2)
+            plt.close(fig2) # <--- CLAVE PARA EVITAR EL COLAPSO DEL SERVIDOR
             
-            
-        # --- Tabla de Detalles (Ocultable) ---
-        st.markdown("<br>", unsafe_allow_html=True) # Espaciado
+        # --- Tabla de Detalles ---
+        st.markdown("<br>", unsafe_allow_html=True)
         with st.expander("Ver tabla de datos detallada"):
             st.dataframe(df_creacion, use_container_width=True)
 
     except Exception as e:
-        st.error(f"Error al cargar o procesar el archivo: {e}")
-        
+        st.error(f"Error al procesar el archivo: {e}")
+
+else:
+    # Mensaje inicial cuando aún no se sube nada
+    st.info("👋 ¡Hola! Por favor, arrastra un archivo de Excel arriba para comenzar a generar tu Dashboard.")
+
 # ==============================================================================
 # 5. Pie de Página (Footer)
 # ==============================================================================
 st.markdown("<br>", unsafe_allow_html=True)
-st.divider() # Línea divisoria elegante
+st.divider()
 
-# Creamos 3 columnas para organizar la información final
 f_col1, f_col2, f_col3 = st.columns(3)
 
 with f_col1:
     st.markdown("#### **Desarrollado por:**")
-    st.write("👨‍💻 **Cristian Tobar Morales**")
+    st.write("👨‍💻 **Cristian**")
     st.caption("Magíster en Data Science")
 
 with f_col2:
@@ -183,11 +153,10 @@ with f_col3:
     st.write("🚀 **Versión:** 1.0.0")
     st.caption("Última actualización: Abril 2026")
 
-# Copyright centrado en la parte inferior
 st.markdown(
     """
     <div style='text-align: center; color: grey; padding-top: 20px;'>
-        <p>© 2026 <b>Cristian Tobar Morales</b>. <br> 
+        <p>© 2026 <b>Cristian</b>. <br> 
         Todos los derechos reservados. | Esta aplicación es de uso estrictamente profesional y privado.</p>
     </div>
     """, 
