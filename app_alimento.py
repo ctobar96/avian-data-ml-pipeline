@@ -141,7 +141,7 @@ with f_col3:
 st.markdown(
     """
     <div style='text-align: center; color: grey; padding-top: 20px;'>
-        <p>© 2026 <b>Cristian</b>. <br> 
+        <p>© 2026 <b>Cristian Tobar Morales</b>. <br> 
         Todos los derechos reservados. | Esta aplicación es de uso estrictamente profesional y privado.</p>
     </div>
     """, 
