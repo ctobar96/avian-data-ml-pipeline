@@ -70,41 +70,87 @@ if archivo_subido is not None:
         
         st.markdown("---")
         
-        # --- Preparación de datos para el gráfico ---
-        produccion_por_lote = df_creacion.groupby('Lote/Serie')['Cantidad'].sum().reset_index()
-        produccion_por_lote = produccion_por_lote.sort_values(by='Cantidad', ascending=False)
-
-        # --- Renderizado del Gráfico ---
-        st.subheader("Distribución del Total de Alimento Producido según Sector")
+        # ==============================================================================
+        # 4. Visualización de Gráficos (Lado a Lado)
+        # ==============================================================================
+        # Creamos dos columnas para los gráficos principales
+        col_graf1, col_graf2 = st.columns(2)
         
-        fig, ax = plt.subplots(figsize=(14, 6))
-        sns.barplot(
-            data=produccion_por_lote, 
-            x='Lote/Serie', 
-            y='Cantidad', 
-            hue='Lote/Serie', 
-            palette='magma', 
-            legend=False,
-            ax=ax # Es importante pasar el 'ax' en Streamlit
-        )
+         # --- COLUMNA 1: PRODUCCIÓN POR SECTOR ---
+        with col_graf1:
+    
+            # --- Preparación de datos para el gráfico ---
+            produccion_por_lote = df_creacion.groupby('Lote/Serie')['Cantidad'].sum().reset_index()
+            produccion_por_lote = produccion_por_lote.sort_values(by='Cantidad', ascending=False)
 
-        # Añadir etiquetas sobre las barras
-        for p in ax.patches:
-            ax.annotate(f"{int(p.get_height()):,}".replace(',', '.'), 
-                        (p.get_x() + p.get_width() / 2., p.get_height()), 
-                        ha='center', va='bottom', 
-                        fontsize=10, color='black', xytext=(0, 5), 
-                        textcoords='offset points')
+            # --- Renderizado del Gráfico ---
+            st.subheader("Distribución del Total de Alimento Producido según Sector")
+            
+            fig1, ax1 = plt.subplots(figsize=(8, 6))
+            sns.barplot(
+                data=produccion_por_lote, 
+                x='Lote/Serie', 
+                y='Cantidad', 
+                hue='Lote/Serie', 
+                palette='magma', 
+                legend=False,
+                ax=ax1 # Es importante pasar el 'ax' en Streamlit
+            )
 
-        plt.xlabel('Sector', fontsize=12)
-        plt.ylabel('Alimento Fabricado (kg)', fontsize=12)
-        plt.xticks(rotation=45, ha='right') 
-        plt.grid(axis='y', linestyle='--', alpha=0.6)
-        plt.tight_layout()
+            # Ajustes visuales (Margen superior y formato de miles)
+            ax1.set_ylim(0, ax1.get_ylim()[1] * 1.20)
+            from matplotlib.ticker import FuncFormatter
+            ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
+            
+            # Añadir etiquetas sobre las barras
+            for p in ax1.patches:
+                ax1.annotate(f"{int(p.get_height()):,}".replace(',', '.'), 
+                            (p.get_x() + p.get_width() / 2., p.get_height()), 
+                            ha='center', va='bottom', 
+                            fontsize=9, color='black', xytext=(0, 5), 
+                            textcoords='offset points')
 
-        # Inyectar el gráfico en la web
-        st.pyplot(fig)
+            plt.xlabel('Sector', fontsize=12)
+            plt.ylabel('Alimento Fabricado (kg)', fontsize=12)
+            plt.xticks(rotation=45, ha='right') 
+            plt.grid(axis='y', linestyle='--', alpha=0.6)
+            plt.tight_layout()
 
+            # Inyectar el gráfico en la web
+            st.pyplot(fig1)
+
+            # --- COLUMNA 2: CONSUMO DE MATERIAS PRIMAS ---
+        with col_graf2:
+            st.subheader("Consumo por Materia Prima")
+            
+            # Preparación de datos (ISS-WO)
+            df_consumo = df_filtrado[df_filtrado['Tipo Trans'] == 'ISS-WO'].copy()
+            df_consumo['Cantidad'] = df_consumo['Cantidad'].abs()
+            
+            consumo_insumos = df_consumo.groupby('Descripción')['Cantidad'].sum().reset_index()
+            consumo_insumos = consumo_insumos.sort_values(by='Cantidad', ascending=False)
+
+            fig2, ax2 = plt.subplots(figsize=(8, 6))
+            sns.barplot(
+                data=consumo_insumos, x='Descripción', y='Cantidad', 
+                hue='Descripción', palette='viridis', legend=False, ax=ax2
+            )
+
+            # Ajustes visuales (Margen superior y formato de miles)
+            ax2.set_ylim(0, ax2.get_ylim()[1] * 1.20)
+            ax2.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
+
+            for p in ax2.patches:
+                if p.get_height() > 0:
+                    ax2.annotate(f"{int(p.get_height()):,}".replace(',', '.'), 
+                                (p.get_x() + p.get_width() / 2., p.get_height()), 
+                                ha='center', va='bottom', fontsize=9, xytext=(0, 5), textcoords='offset points')
+
+            plt.xticks(rotation=45, ha='right')
+            plt.ylabel('Kilos (kg)')
+            st.pyplot(fig2)
+            
+            
         # --- Tabla de Detalles (Ocultable) ---
         st.markdown("<br>", unsafe_allow_html=True) # Espaciado
         with st.expander("Ver tabla de datos detallada"):
