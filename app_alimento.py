@@ -112,3 +112,38 @@ if archivo_subido is not None:
 
     except Exception as e:
         st.error(f"Error al cargar o procesar el archivo: {e}")
+        
+# ==============================================================================
+# 5. Pie de Página (Footer)
+# ==============================================================================
+st.markdown("<br>", unsafe_allow_html=True)
+st.divider() # Línea divisoria elegante
+
+# Creamos 3 columnas para organizar la información final
+f_col1, f_col2, f_col3 = st.columns(3)
+
+with f_col1:
+    st.markdown("#### **Desarrollado por:**")
+    st.write("👨‍💻 **Cristian Tobar Morales**")
+    st.caption("Magíster en Data Science")
+
+with f_col2:
+    st.markdown("#### **Proyecto:**")
+    st.write("🐔 *Avian Data ML Pipeline*")
+    st.caption("Análisis y Modelado de Datos")
+
+with f_col3:
+    st.markdown("#### **Información:**")
+    st.write("🚀 **Versión:** 1.0.0")
+    st.caption("Última actualización: Abril 2026")
+
+# Copyright centrado en la parte inferior
+st.markdown(
+    """
+    <div style='text-align: center; color: grey; padding-top: 20px;'>
+        <p>© 2026 <b>Cristian</b>. <br> 
+        Todos los derechos reservados. | Esta aplicación es de uso estrictamente profesional y privado.</p>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
