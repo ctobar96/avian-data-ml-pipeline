@@ -69,7 +69,7 @@ if archivo_subido is not None:
             produccion_por_lote = df_creacion.groupby('Lote/Serie')['Cantidad'].sum().reset_index()
             produccion_por_lote = produccion_por_lote.sort_values(by='Cantidad', ascending=False)
 
-            fig1, ax1 = plt.subplots(figsize=(14, 5))
+            fig1, ax1 = plt.subplots(figsize=(14, 6))
             sns.barplot(data=produccion_por_lote, x='Lote/Serie', y='Cantidad', hue='Lote/Serie', palette='magma', legend=False, ax=ax1)
 
             ax1.set_ylim(0, ax1.get_ylim()[1] * 1.20)
@@ -99,7 +99,7 @@ if archivo_subido is not None:
             consumo_insumos = df_consumo.groupby('Descripción')['Cantidad'].sum().reset_index()
             consumo_insumos = consumo_insumos.sort_values(by='Cantidad', ascending=False)
 
-            fig2, ax2 = plt.subplots(figsize=(14, 5))
+            fig2, ax2 = plt.subplots(figsize=(14, 6))
             sns.barplot(data=consumo_insumos, x='Descripción', y='Cantidad', hue='Descripción', palette='viridis', legend=False, ax=ax2)
 
             ax2.set_ylim(0, ax2.get_ylim()[1] * 1.20)
