@@ -92,7 +92,7 @@ if archivo_subido is not None:
         with col_graf2:
             st.subheader("Consumo por Materia Prima")
             df_consumo = df_filtrado[(df_filtrado['Tipo Trans'] == 'ISS-WO')
-             & (df_filtrado['Lín Producto'] == 15)].copy()
+             & (df_filtrado['Lín Producto'] == 9)].copy()
             df_consumo['Cantidad'] = df_consumo['Cantidad'].abs()
             
             consumo_insumos = df_consumo.groupby('Descripción')['Cantidad'].sum().reset_index()
