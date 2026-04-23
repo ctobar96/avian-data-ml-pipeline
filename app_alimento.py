@@ -61,7 +61,8 @@ if archivo_subido is not None:
         st.markdown("---")
         
         # --- Gráficos Lado a Lado ---
-        col_graf1, col_graf2 = st.columns(2)
+        col_graf1 = st.container()
+        col_graf2 = st.container()
         
         with col_graf1:
             st.subheader("Distribución del Total de Alimento Producido según Sector")
