@@ -89,9 +89,13 @@ if archivo_subido is not None:
 
             st.pyplot(fig1)
             plt.close(fig1) # <--- CLAVE PARA EVITAR EL COLAPSO DEL SERVIDOR
+            
+        st.divider() 
 
         with col_graf2:
+            st.header("🧪 Consumo de Insumos")
             st.subheader("Consumo por Materia Prima")
+            
             df_consumo = df_filtrado[(df_filtrado['Tipo Trans'] == 'ISS-WO')
              & (df_filtrado['Lín Producto'] == 9)].copy()
             df_consumo['Cantidad'] = df_consumo['Cantidad'].abs()
