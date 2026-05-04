@@ -30,3 +30,6 @@ venv/
 # Ignorar extension .xls y .csv
 *.xls
 *.csv
+
+# URI de conexión
+.env

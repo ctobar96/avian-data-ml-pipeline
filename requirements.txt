@@ -16,3 +16,8 @@ ipykernel==6.29.2
 streamlit==1.31.0
 matplotlib==3.8.2
 seaborn==0.13.2
+
+# Librerías de Base de Datos
+sqlalchemy
+psycopg2-binary
+python-dotenv
