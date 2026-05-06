@@ -96,28 +96,23 @@ async def cargar_excel(file: UploadFile = File(...)):
     finally:
         db.close() # Siempre cerramos la puerta
 
-
-
 # ==============================================================================
-# NUEVO ENDPOINT: Buscador de Lotes
+# ENDPOINT 2: BUSCADOR DE TRAZABILIDAD (GET)
 # ==============================================================================
 @app.get("/buscar-lote/")
 def buscar_lote(lote: str, fecha: str):
-    # Abrimos una sesión temporal con la base de datos
     db = SessionLocal()
-    
     try:
-        # 1. Buscamos el Lote Padre
+        # Buscamos el registro padre exacto
         produccion = db.query(ProduccionAlimento).filter(
             ProduccionAlimento.lote_destino == lote,
             ProduccionAlimento.fecha_efectiva == fecha
-        ).first() # .first() trae el primer resultado que coincida
+        ).first()
 
-        # 2. Si no existe, devolvemos un error amigable
         if not produccion:
-            return {"status": "error", "message": "No se encontraron registros para este lote y fecha."}
+            return {"status": "error", "message": "No se encontraron registros para este lote y fecha en la base de datos."}
 
-        # 3. Si existe, armamos el JSON con el Padre y sus Hijos (Macros y Micros)
+        # Armamos el paquete JSON con el Padre y sus Hijos a través de la relación ORM
         return {
             "status": "success",
             "produccion": {
@@ -129,9 +124,5 @@ def buscar_lote(lote: str, fecha: str):
             "macros": [{"Materia Prima": m.materia_prima, "Cantidad (Kg)": m.cantidad_consumida} for m in produccion.macros],
             "micros": [{"Materia Prima": m.materia_prima, "Cantidad (Kg)": m.cantidad_consumida} for m in produccion.micros]
         }
-        
     finally:
-        # SIEMPRE cerramos la conexión para no saturar el Pooler
         db.close()
-        
-        

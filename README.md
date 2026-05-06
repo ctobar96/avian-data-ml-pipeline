@@ -1,10 +1,77 @@
-# AvianData: Pipeline de Ingeniería de Datos y Predicción de Calidad para la Industria Avícola
+# 🐔 AvianData: Pipeline de Ingeniería de Datos y Predicción de Calidad para la Industria Avícola
 
-## Descripción del Proyecto
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.31-FF4B4B.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)
+
+
+## 📌 Descripción del Proyecto
 Este proyecto desarrolla un pipeline de datos de extremo a extremo (ETL) y modelos predictivos para optimizar el rendimiento biológico y clasificar la calidad comercial en la producción de huevos.
 
+## 🏗️ Arquitectura del Sistema
+El proyecto está construido bajo una arquitectura de microservicios para separar la lógica de negocio de la interfaz de usuario:
+* **Frontend (Streamlit):** Interfaz interactiva para la carga de datos y visualización de KPIs gerenciales.
+* **Backend (FastAPI):** Motor de procesamiento de datos, cálculos estadísticos y futura inferencia de modelos predictivos.
+* **Análisis (Jupyter):** Exploratory Data Analysis (EDA) para el descubrimiento de patrones y selección de características.
+
+## ⚙️ Tecnologías Utilizadas
+* **Manipulación de Datos:** Pandas, Numpy
+* **Visualización:** Matplotlib, Seaborn
+* **Despliegue y API:** Streamlit, FastAPI, Uvicorn
+* **Machine Learning:** (Próximamente: Scikit-Learn, XGBoost)
+
+## 🚀 Instrucciones de Ejecución Local
+
+Para correr este proyecto en tu máquina local, sigue estos pasos:
+
+1. **Clona el repositorio e instala las dependencias:**
+   ```bash
+   git clone [https://github.com/TU_USUARIO/avian-data-ml-pipeline.git](https://github.com/TU_USUARIO/avian-data-ml-pipeline.git)
+   cd avian-data-ml-pipeline
+   pip install -r requirements.txt
+    ```
+
+2. **Inicia el Servidor de Procesamiento (FastAPI):**  
+Abre una terminal y ejecuta:
+    ```bash
+    uvicorn src.api:app --reload
+    ```
+    (El servidor estará escuchando en http://127.0.0.1:8000)
 
 
+3. **Inicia el Dashboard (Streamlit):**  
+Abre una segunda terminal y ejecuta:
+    ```bash
+    streamlit run app/app_alimento.py
+    ```
+
+
+
+
+```text
+avian-data-ml-pipeline/
+│
+├── data/                      # 🗄️ Todo lo relacionado con datos (No subir a GitHub)
+│   ├── raw/                   # Archivos originales (ej. ALIMENTOENERO2026.xls)
+│   └── processed/             # Tablas limpias y cruzadas listas para Machine Learning
+│
+├── notebooks/                 # 📓 Cuadernos de experimentación y análisis
+│   ├── 01_limpieza_datos.ipynb
+│   └── 02_eda_produccion.ipynb
+│
+├── src/                       # 🧠 Backend y Lógica de Negocio (El "Cerebro")
+│   ├── api.py                 # Tu servidor de FastAPI
+│   └── modelos_ml.py          # (En el futuro) Aquí irá tu código de Random Forest/XGBoost
+│
+├── app/                       # 💻 Frontend e Interfaz (La "Cara")
+│   └── app_alimento.py        # Tu dashboard de Streamlit
+│
+├── models/                    # 🤖 Modelos ya entrenados (archivos .pkl o .joblib)
+│
+├── .gitignore                 # 🛡️ Archivo de seguridad clave
+├── requirements.txt           # 📦 Lista de librerías y dependencias
+└── README.md                  # 📖 La portada de tu portafolio
+```
 
 Diagrama ER simple
 ```text
@@ -54,3 +121,9 @@ produccion_alimento
     └── 1:N → consumo_insumos_micros
 ```
 
+
+
+## 👨‍💻 Autor
+**Cristian Tobar Morales** Magíster en Data Science Perfil de LinkedIn | Portafolio
+
+Nota: Los datos brutos (/data) están ignorados por motivos de confidencialidad comercial.
