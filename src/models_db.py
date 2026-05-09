@@ -2,7 +2,7 @@
 # Archivo: src/models_db.py
 from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
-from database import engine
+from src.database import engine
 
 # Creamos la clase base para nuestras tablas
 Base = declarative_base()
