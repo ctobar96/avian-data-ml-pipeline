@@ -4,8 +4,7 @@ import pandas as pd
 import io
 from sqlalchemy.orm import sessionmaker
 from src.database import engine
-from src.models_dbmodels_db import ProduccionAlimento, ConsumoInsumosMacros, ConsumoInsumosMicros
-
+from src.models_db import ProduccionAlimento, ConsumoInsumosMacros, ConsumoInsumosMicros
 
 # 1. Configuración de FastAPI y Base de Datos
 app = FastAPI(title="Avian Data API", version="1.0")
