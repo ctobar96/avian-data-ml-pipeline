@@ -4,13 +4,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter 
 
-from sqlalchemy.orm import sessionmaker
-from database import engine
-from models_db import ProduccionAlimento
-
-# Creamos el generador de sesiones para hablar con Supabase
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 # ==============================================================================
 # 1. Configuración de la página
 # ==============================================================================
