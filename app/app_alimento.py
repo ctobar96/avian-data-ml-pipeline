@@ -5,6 +5,14 @@ import seaborn as sns
 from matplotlib.ticker import FuncFormatter 
 import requests
 
+
+# Intentamos leer la URL de la nube. Si falla, usamos el localhost.
+try:
+    API_URL = st.secrets["API_URL"]
+except FileNotFoundError:
+    API_URL = "http://127.0.0.1:8000"
+    
+
 # ==============================================================================
 # 1. Configuración de la página
 # ==============================================================================
@@ -26,7 +34,7 @@ if archivo_subido is not None:
             archivos_para_enviar = {"file": (archivo_subido.name, archivo_subido.getvalue(), "application/vnd.ms-excel")}
 
             # FastAPI recibe el archivo, hace el ffill() y guarda en la BD
-            respuesta_api = requests.post("http://127.0.0.1:8000/cargar-excel/", files=archivos_para_enviar)
+            respuesta_api = requests.post(f"{API_URL}/cargar-excel/", files=archivos_para_enviar)
             
             if respuesta_api.status_code == 200:
                 st.toast("✅ " + respuesta_api.json().get("message", "Datos guardados en Supabase"))
@@ -166,7 +174,7 @@ if boton_buscar and lote_input:
     with st.spinner("Buscando en la base de datos..."):
         parametros = {"lote": lote_input.strip(), "fecha": str(fecha_input)}
         try:
-            respuesta_busqueda = requests.get("http://127.0.0.1:8000/buscar-lote/", params=parametros)
+            respuesta_busqueda = requests.get(f"{API_URL}/buscar-lote/", params=parametros)
             datos_lote = respuesta_busqueda.json()
             
             if datos_lote.get("status") == "success":
