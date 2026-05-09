@@ -3,8 +3,8 @@ from fastapi import FastAPI, UploadFile, File
 import pandas as pd
 import io
 from sqlalchemy.orm import sessionmaker
-from database import engine
-from models_db import ProduccionAlimento, ConsumoInsumosMacros, ConsumoInsumosMicros
+from src.database import engine
+from src.models_dbmodels_db import ProduccionAlimento, ConsumoInsumosMacros, ConsumoInsumosMicros
 
 
 # 1. Configuración de FastAPI y Base de Datos
