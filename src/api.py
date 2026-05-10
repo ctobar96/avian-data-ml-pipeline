@@ -44,6 +44,7 @@ async def cargar_excel(file: UploadFile = File(...)):
 
         lista_lotes = []
         lotes_guardados = 0
+        #lotes_en_memoria = set() # Mantenemos el guardia de seguridad por precaución
         
         # iteramos por cada lote de alimento creado
         for index, row_padre in df_padres.iterrows():
@@ -142,6 +143,34 @@ def buscar_lote(lote: str, fecha: str):
             },
             "macros": [{"Materia Prima": m.materia_prima, "Cantidad (Kg)": m.cantidad_consumida} for m in produccion.macros],
             "micros": [{"Materia Prima": m.materia_prima, "Cantidad (Kg)": m.cantidad_consumida} for m in produccion.micros]
+        }
+    finally:
+        db.close()
+from sqlalchemy import func # Importante agregar esto arriba
+
+# ==============================================================================
+# ENDPOINT 3: RESUME (GET)
+# ==============================================================================
+@app.get("/resumen-produccion/")
+def obtener_resumen():
+    db = SessionLocal()
+    try:
+        # 1. Sumamos el total de kilos directamente en la base de datos
+        total_kg = db.query(func.sum(ProduccionAlimento.cantidad_kg)).scalar() or 0
+        
+        # 2. Obtenemos la producción por lote para el gráfico
+        produccion_lotes = db.query(
+            ProduccionAlimento.lote_destino, 
+            func.sum(ProduccionAlimento.cantidad_kg)
+        ).group_by(ProduccionAlimento.lote_destino).all()
+        
+        # Formateamos para que sea fácil de leer por Streamlit
+        datos_grafico = [{"Lote": row[0], "Cantidad": row[1]} for row in produccion_lotes]
+
+        return {
+            "status": "success",
+            "total_kg": float(total_kg),
+            "datos_lotes": datos_grafico
         }
     finally:
         db.close()
