@@ -42,7 +42,8 @@ async def cargar_excel(file: UploadFile = File(...)):
             # Evitar duplicados
             existe = db.query(ProduccionAlimento).filter_by(
                 lote_destino=lote_actual, 
-                fecha_efectiva=fecha_actual
+                fecha_efectiva=fecha_actual,
+                cantidad_kg=cantidad_padre
             ).first()
         
             if existe:
