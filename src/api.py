@@ -18,6 +18,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 async def cargar_excel(file: UploadFile = File(...)):
     db = SessionLocal() # Abrimos una sesión temporal con la base de datos
     try:
+    
         # 1. Leemos el archivo Excel en memoria
         contents = await file.read()
         df = pd.read_excel(io.BytesIO(contents), sheet_name='Datos')
@@ -29,6 +30,17 @@ async def cargar_excel(file: UploadFile = File(...)):
         
         # Filtramos solo la creación del Alimento (Cabeceras)
         df_padres = df[(df['Tipo Trans'] == 'RCT-WO') & (df['Lín Producto'] == 15)]
+
+
+        # ==============================================================================
+        # LIMPIEZA EXTREMA CON PANDAS (Antes de procesar)
+        # ==============================================================================
+        # Forzamos el redondeo a 2 decimales en toda la columna de una sola vez
+        df_padres['Cantidad'] = df_padres['Cantidad'].astype(float).round(2)
+        
+        # Eliminamos cualquier fila gemela directamente en el DataFrame
+        df_padres = df_padres.drop_duplicates(subset=['Lote_Asignado', 'Efectiva', 'Cantidad'])
+        
 
         lista_lotes = []
         lotes_guardados = 0
