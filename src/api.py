@@ -30,25 +30,25 @@ async def cargar_excel(file: UploadFile = File(...)):
         # Filtramos solo la creación del Alimento (Cabeceras)
         df_padres = df[(df['Tipo Trans'] == 'RCT-WO') & (df['Lín Producto'] == 15)]
 
+        lista_lotes = []
         lotes_guardados = 0
         
         # iteramos por cada lote de alimento creado
         for index, row_padre in df_padres.iterrows():
             lote_actual = str(row_padre['Lote_Asignado']).strip()
-            # Convertimos la fecha al formato correcto de base de datos
             fecha_actual = pd.to_datetime(row_padre['Efectiva']).date()
             cantidad_padre = float(row_padre['Cantidad'])
         
-            # Evitar duplicados: Verificamos si este lote exacto ya existe
+            # Evitar duplicados
             existe = db.query(ProduccionAlimento).filter_by(
                 lote_destino=lote_actual, 
                 fecha_efectiva=fecha_actual
             ).first()
         
             if existe:
-                continue # Si ya existe, saltamos al siguiente lote para evitar duplicados
+                continue 
             
-            # 1. Guardar la Cabecera (Producción)
+            # 1. Guardar la Cabecera (Padre) SOLO EN MEMORIA
             nueva_produccion = ProduccionAlimento(
                 fecha_efectiva=fecha_actual,
                 lote_destino=lote_actual,
@@ -56,42 +56,46 @@ async def cargar_excel(file: UploadFile = File(...)):
                 descripcion=str(row_padre['Descripción']).strip(),
                 cantidad_kg=cantidad_padre
             )
-            db.add(nueva_produccion)
-            db.commit()
-            db.refresh(nueva_produccion) # Obtenemos el ID autoincremental (PK) generado
             
-            # 2. Buscar los Insumos (Hijos) de este lote específico
+            # 2. Buscar los Insumos (Hijos)
             df_hijos = df[(df['Tipo Trans'] == 'ISS-WO') & (df['Lote_Asignado'] == lote_actual)]
             
             for _, row_hijo in df_hijos.iterrows():
-                # Absoluto para que no queden en negativo en la BD
                 cantidad_consumida = abs(float(row_hijo['Cantidad']))
-                linea_prod = str(row_hijo['Lín Producto']).strip().zfill(2) # Asegura que sea '07' o '09'
+                linea_prod = str(row_hijo['Lín Producto']).strip().zfill(2)
                 
-                # 3. Separar y guardar Macros (Línea 09) y Micros (Línea 07)
+                # 3. Separar y anidar DIRECTAMENTE al objeto padre
                 if linea_prod == '09':
                     nuevo_macro = ConsumoInsumosMacros(
-                        produccion_id=nueva_produccion.id, # Conectamos con el ID del padre
                         numero_articulo=row_hijo['Numero articulo'],
                         materia_prima=str(row_hijo['Descripción']).strip(),
                         cantidad_consumida=cantidad_consumida
                     )
-                    db.add(nuevo_macro)
+                    # Magia del ORM: conectamos el hijo sin necesitar el ID todavía
+                    nueva_produccion.macros.append(nuevo_macro)
                 
                 elif linea_prod == '07':
                     nuevo_micro = ConsumoInsumosMicros(
-                        produccion_id=nueva_produccion.id, # Conectamos con el ID del padre
                         numero_articulo=row_hijo['Numero articulo'],
                         materia_prima=str(row_hijo['Descripción']).strip(),
                         cantidad_consumida=cantidad_consumida
                     )
-                    db.add(nuevo_micro)
-                
-            db.commit() # Confirmamos la inserción de todos los hijos
+                    # Magia del ORM: conectamos el hijo sin necesitar el ID todavía
+                    nueva_produccion.micros.append(nuevo_micro)
+            
+            # 4. Metemos el Lote completo (con sus hijos ya anidados) a la caja
+            lista_lotes.append(nueva_produccion)
             lotes_guardados += 1
         
-        return {"status": "success", "message": f"Se procesaron e ingresaron {lotes_guardados} nuevos lotes a la base de datos."}   
-            
+        # ====================================================================
+        # 5. EL VIAJE ÚNICO A LA BASE DE DATOS (TOTALMENTE FUERA DE LOS CICLOS)
+        # ====================================================================
+        if lista_lotes: # Si la caja tiene lotes nuevos
+            db.add_all(lista_lotes)
+            db.commit() # SQLAlchemy le asignará los IDs a padres e hijos automáticamente
+        
+        return {"status": "success", "message": f"Se procesaron e ingresaron {lotes_guardados} nuevos lotes a la base de datos."}
+         
     except Exception as e:
         db.rollback() # Si hay un error, deshacemos los cambios para no corromper la BD
         return {"status": "error", "message": f"Error procesando el archivo: {str(e)}"}
