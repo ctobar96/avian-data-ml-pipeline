@@ -16,6 +16,7 @@ class ProduccionAlimento(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     fecha_efectiva = Column(Date, index=True)
     lote_destino = Column(String(100), index=True)
+    numero_articulo = Column(String, nullable=True)
     descripcion = Column(String(200))
     cantidad_kg = Column(Float)
 
@@ -37,6 +38,7 @@ class ConsumoInsumosMacros(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     produccion_id = Column(Integer, ForeignKey('produccion_alimento.id')) # Tu Llave Foránea
+    numero_articulo = Column(String, nullable=True)
     materia_prima = Column(String(200))
     cantidad_consumida = Column(Float)
 
@@ -52,6 +54,7 @@ class ConsumoInsumosMicros(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     produccion_id = Column(Integer, ForeignKey('produccion_alimento.id')) # Tu Llave Foránea
+    numero_articulo = Column(String, nullable=True)
     materia_prima = Column(String(200))
     cantidad_consumida = Column(Float)
 

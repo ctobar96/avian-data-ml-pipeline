@@ -52,6 +52,7 @@ async def cargar_excel(file: UploadFile = File(...)):
             nueva_produccion = ProduccionAlimento(
                 fecha_efectiva=fecha_actual,
                 lote_destino=lote_actual,
+                numero_articulo=row_padre['Numero articulo'],
                 descripcion=str(row_padre['Descripción']).strip(),
                 cantidad_kg=cantidad_padre
             )
@@ -71,6 +72,7 @@ async def cargar_excel(file: UploadFile = File(...)):
                 if linea_prod == '09':
                     nuevo_macro = ConsumoInsumosMacros(
                         produccion_id=nueva_produccion.id, # Conectamos con el ID del padre
+                        numero_articulo=row_hijo['Numero articulo'],
                         materia_prima=str(row_hijo['Descripción']).strip(),
                         cantidad_consumida=cantidad_consumida
                     )
@@ -79,6 +81,7 @@ async def cargar_excel(file: UploadFile = File(...)):
                 elif linea_prod == '07':
                     nuevo_micro = ConsumoInsumosMicros(
                         produccion_id=nueva_produccion.id, # Conectamos con el ID del padre
+                        numero_articulo=row_hijo['Numero articulo'],
                         materia_prima=str(row_hijo['Descripción']).strip(),
                         cantidad_consumida=cantidad_consumida
                     )
