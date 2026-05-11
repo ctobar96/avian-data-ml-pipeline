@@ -5,6 +5,7 @@ import io
 from sqlalchemy.orm import sessionmaker
 from src.database import engine
 from src.models_db import ProduccionAlimento, ConsumoInsumosMacros, ConsumoInsumosMicros
+from sqlalchemy import extract # Importante para filtrar por mes/año
 
 # 1. Configuración de FastAPI y Base de Datos
 app = FastAPI(title="Avian Data API", version="1.0")
@@ -148,47 +149,65 @@ def buscar_lote(lote: str, fecha: str):
         db.close()
 from sqlalchemy import func # Importante agregar esto arriba
 
-# ==============================================================================
-# ENDPOINT 3: RESUMEN (GET)
-# ==============================================================================
-def obtener_nombre_mes(fecha):
-    meses = {
-        1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
-        5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
-        9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
-    }
-    return f"{meses[fecha.month]} {fecha.year}"
 
-@app.get("/resumen-produccion/")
-def obtener_resumen():
+# ==============================================================================
+# ENDPOINT 3: Listado de meses disponibles
+# ==============================================================================
+@app.get("/listado-meses/")
+def obtener_meses():
     db = SessionLocal()
     try:
+        # Buscamos combinaciones únicas de Mes y Año en la base de datos
+        periodos = db.query(
+            extract('month', ProduccionAlimento.fecha_efectiva).label('mes'),
+            extract('year', ProduccionAlimento.fecha_efectiva).label('anio')
+        ).distinct().all()
         
-        # Buscamos la fecha del primer registro para saber el mes
-        primer_registro = db.query(ProduccionAlimento.fecha_efectiva).first()
-        mes_texto = obtener_nombre_mes(primer_registro[0]) if primer_registro else "Sin Datos"
+        meses_nombres = {
+            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
+            7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+        }
         
-        total_kg = db.query(func.sum(ProduccionAlimento.cantidad_kg)).scalar() or 0
-        
-        
-        # 1. Sumamos el total de kilos directamente en la base de datos
-        total_kg = db.query(func.sum(ProduccionAlimento.cantidad_kg)).scalar() or 0
-        
-        # 2. Obtenemos la producción por lote para el gráfico
-        produccion_lotes = db.query(
-            ProduccionAlimento.lote_destino, 
-            func.sum(ProduccionAlimento.cantidad_kg)
-        ).group_by(ProduccionAlimento.lote_destino).all()
-        
-        # Formateamos para que sea fácil de leer por Streamlit
-        datos_grafico = [{"Lote": row[0], "Cantidad": row[1]} for row in produccion_lotes]
+        # Formateamos para el selector de Streamlit: "Enero 2026"
+        resultado = [f"{meses_nombres[int(p.mes)]} {int(p.anio)}" for p in periodos]
+        return {"status": "success", "periodos": resultado}
+    finally:
+        db.close()
 
+
+# ==============================================================================
+# ENDPOINT 4: RESUMEN (GET)
+# ==============================================================================
+
+@app.get("/resumen-produccion/")
+def obtener_resumen(periodo: str = None): # Recibe "Enero 2026"
+    db = SessionLocal()
+    try:
+        query = db.query(ProduccionAlimento)
+        
+        if periodo:
+            # Separamos "Enero 2026" en mes (1) y año (2026)
+            nombre_mes, anio = periodo.split()
+            meses_inv = {v: k for k, v in {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}.items()}
+            
+            query = query.filter(
+                extract('month', ProduccionAlimento.fecha_efectiva) == meses_inv[nombre_mes],
+                extract('year', ProduccionAlimento.fecha_efectiva) == int(anio)
+            )
+
+        total_kg = db.query(func.sum(query.subquery().c.cantidad_kg)).scalar() or 0
+        produccion_lotes = db.query(
+            query.subquery().c.lote_destino, 
+            func.sum(query.subquery().c.cantidad_kg)
+        ).group_by(query.subquery().c.lote_destino).all()
+        
         return {
             "status": "success",
             "total_kg": float(total_kg),
-            "mes_actual": mes_texto,
-            "datos_lotes": datos_grafico
+            "mes_actual": periodo or "Todos",
+            "datos_lotes": [{"Lote": row[0], "Cantidad": row[1]} for row in produccion_lotes]
         }
     finally:
         db.close()
+  
   
