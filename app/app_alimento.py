@@ -17,6 +17,8 @@ st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide
 # 2. SECCIÓN DE CARGA (OPCIONAL/EXPANDER)
 # ==============================================================================
 st.title("📊 Dashboard de Producción de Alimento")
+st.markdown("Monitorización del volumen de alimento fabricado y consumo de materias primas.")
+
 
 with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
     archivo_subido = st.file_uploader("Sube tu archivo de producción", type=["xls", "xlsx"])
