@@ -16,7 +16,7 @@ st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide
 # ==============================================================================
 # 2. SECCIÓN DE CARGA (OPCIONAL/EXPANDER)
 # ==============================================================================
-st.title("📊 Dashboard de Producción (Datos de Supabase)")
+st.title("📊 Dashboard de Producción de Alimento")
 
 with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
     archivo_subido = st.file_uploader("Sube tu archivo de producción", type=["xls", "xlsx"])
@@ -58,7 +58,7 @@ except Exception as e:
     st.error(f"No se pudo conectar con la API para obtener los periodos: {e}")
 
 # ==============================================================================
-# 4. VISUALIZACIÓN DE MÉTRICAS Y GRÁFICO (DATOS DE SUPABASE)
+# 4. VISUALIZACIÓN DE MÉTRICAS Y GRÁFICO 
 # ==============================================================================
 if periodo_seleccionado:
     with st.spinner(f"Consultando datos de {periodo_seleccionado}..."):
@@ -115,8 +115,11 @@ if periodo_seleccionado:
                     st.pyplot(fig)
                     plt.close(fig)
             
+            else:
+                st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
         except Exception as e:
             st.error(f"Error al procesar visualización: {e}")
+
 
 # ==============================================================================
 # 5. BUSCADOR DE TRAZABILIDAD
