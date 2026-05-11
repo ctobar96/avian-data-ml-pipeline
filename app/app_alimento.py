@@ -5,155 +5,68 @@ import seaborn as sns
 from matplotlib.ticker import FuncFormatter 
 import requests
 
-
-# Intentamos leer la URL de la nube. Si falla, usamos el localhost.
+# Configuración de URL
 try:
     API_URL = st.secrets["API_URL"]
-except FileNotFoundError:
+except:
     API_URL = "http://127.0.0.1:8000"
-    
 
-# ==============================================================================
-# 1. Configuración de la página
-# ==============================================================================
 st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide")
-
-st.title("📊 Dashboard de Producción de Alimento")
-st.markdown("Monitorización del volumen de alimento fabricado y consumo de materias primas.")
+st.title("📊 Dashboard de Producción (Datos de Supabase)")
 
 # ==============================================================================
-# 2. Carga de Datos y Envío a la API
+# 1. Carga de Datos (Envío)
 # ==============================================================================
-archivo_subido = st.file_uploader("Sube tu archivo Excel de producción de alimento", type=["xls", "xlsx"])
+archivo_subido = st.file_uploader("Actualizar base de datos con nuevo Excel", type=["xls", "xlsx"])
 
 if archivo_subido is not None:
-    # --- CONEXIÓN CON EL CEREBRO (FASTAPI) ---
-    with st.spinner("Procesando el archivo y actualizando la base de datos..."):
-        try:
-            # Preparamos el archivo para enviarlo a FastAPI
-            archivos_para_enviar = {"file": (archivo_subido.name, archivo_subido.getvalue(), "application/vnd.ms-excel")}
+    if st.button("🚀 Procesar e Inyectar a Base de Datos"):
+        with st.spinner("Sincronizando con Supabase..."):
+            try:
+                archivos = {"file": (archivo_subido.name, archivo_subido.getvalue(), "application/vnd.ms-excel")}
+                res = requests.post(f"{API_URL}/cargar-excel/", files=archivos)
+                if res.status_code == 200:
+                    st.success(res.json().get("message"))
+                else:
+                    st.error("Error en la carga.")
+            except Exception as e:
+                st.error(f"Error de conexión: {e}")
 
-            # FastAPI recibe el archivo, hace el ffill() y guarda en la BD
-            respuesta_api = requests.post(f"{API_URL}/cargar-excel/", files=archivos_para_enviar)
-            
-            if respuesta_api.status_code == 200:
-                st.toast("✅ " + respuesta_api.json().get("message", "Datos guardados en Supabase"))
-            else:
-                st.warning("El archivo se leyó, pero hubo un problema guardándolo en la base de datos.")
-        except Exception as e:
-            st.error(f"🚨 No se pudo conectar a la API. ¿Aseguraste que uvicorn esté corriendo? Error: {e}")
-            
-            
-    # ==============================================================================
-    # 3. Procesamiento Visual (Streamlit dibuja lo que el usuario subió)
-    # ==============================================================================
+st.divider()
+
+# ==============================================================================
+# 2. Visualización (Consulta a la API - La Fuente de Verdad)
+# ==============================================================================
+with st.spinner("Consultando datos reales desde la API..."):
     try:
-        archivo_subido.seek(0)
-        df = pd.read_excel(archivo_subido, sheet_name='Datos')
-
-        columnas_interes = ['Efectiva', 'Tipo Trans', 'Lín Producto', 'Numero articulo', 'Descripción', 'Cantidad', 'Lote/Serie']
-        df_filtrado = df[columnas_interes].copy()
-
-        df_creacion = df_filtrado[
-            (df_filtrado['Tipo Trans'] == 'RCT-WO') & 
-            (df_filtrado['Lín Producto'] == 15)
-        ].copy()
+        res_resumen = requests.get(f"{API_URL}/resumen-produccion/")
         
-        # ==============================================================================
-        # 4. Construcción del Dashboard (KPIs y Gráficos)
-        # ==============================================================================    
-        meses_espanol = {
-            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
-            5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
-            9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
-        }
-        
-        fecha_referencia = df_creacion['Efectiva'].iloc[0]
-        mes_actual = f"{meses_espanol[fecha_referencia.month]} {fecha_referencia.year}"
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric(label="🗓️ Mes de Producción", value=mes_actual)
-        with col2:
-            total_kilos = df_creacion['Cantidad'].sum()
-            st.metric(label="⚖️ Total de Alimento Creado (Kg)", value=f"{int(total_kilos):,}".replace(',', '.'))
-        
-        st.markdown("---")
-        
-        # --- Gráficos Lado a Lado ---
-        col_graf1 = st.container()
-        col_graf2 = st.container()
-        
-        with col_graf1:
-            st.subheader("Distribución del Total de Alimento Producido según Sector")
-            produccion_por_lote = df_creacion.groupby('Lote/Serie')['Cantidad'].sum().reset_index()
-            produccion_por_lote = produccion_por_lote.sort_values(by='Cantidad', ascending=False)
+        if res_resumen.status_code == 200:
+            datos = res_resumen.json()
+            total_kg = datos["total_kg"]
+            df_grafico = pd.DataFrame(datos["datos_lotes"])
 
-            fig1, ax1 = plt.subplots(figsize=(14, 6))
-            sns.barplot(data=produccion_por_lote, x='Lote/Serie', y='Cantidad', hue='Lote/Serie', palette='magma', legend=False, ax=ax1)
+            # KPIs con datos de la API
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric(label="⚖️ Total De Alimento Fabricado (Kg)", value=f"{int(total_kg):,}".replace(',', '.'))
+            with col2:
+                st.metric(label="📦 Lotes Registrados", value=len(df_grafico))
 
-            ax1.set_ylim(0, ax1.get_ylim()[1] * 1.20)
-            ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
-            
-            for p in ax1.patches:
-                if p.get_height() > 0:
-                    ax1.annotate(f"{int(p.get_height()):,}".replace(',', '.'), 
-                                (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                ha='center', va='bottom', fontsize=9, color='black', xytext=(0, 5), textcoords='offset points')
-
-            plt.xlabel('Sector', fontsize=12)
-            plt.ylabel('Alimento Fabricado (kg)', fontsize=12)
-            plt.xticks(rotation=45, ha='right') 
-            plt.grid(axis='y', linestyle='--', alpha=0.6)
-            plt.tight_layout()
-
-            st.pyplot(fig1)
-            plt.close(fig1) 
-            
-        st.divider()
-        
-        with col_graf2:
-            st.header("🧪 Consumo de Insumos")
-            st.subheader("Consumo por Materia Prima")
-            
-            df_consumo = df_filtrado[(df_filtrado['Tipo Trans'] == 'ISS-WO')
-             & (df_filtrado['Lín Producto'] == 9)].copy()
-            df_consumo['Cantidad'] = df_consumo['Cantidad'].abs()
-            
-            consumo_insumos = df_consumo.groupby('Descripción')['Cantidad'].sum().reset_index()
-            consumo_insumos = consumo_insumos.sort_values(by='Cantidad', ascending=False)
-
-            fig2, ax2 = plt.subplots(figsize=(14, 6))
-            sns.barplot(data=consumo_insumos, x='Descripción', y='Cantidad', hue='Descripción', palette='viridis', legend=False, ax=ax2)
-
-            ax2.set_ylim(0, ax2.get_ylim()[1] * 1.20)
-            ax2.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
-
-            for p in ax2.patches:
-                if p.get_height() > 0:
-                    ax2.annotate(f"{int(p.get_height()):,}".replace(',', '.'), 
-                                (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                ha='center', va='bottom', fontsize=9, xytext=(0, 5), textcoords='offset points')
-
-            plt.xlabel('Materia Prima', fontsize=12)
-            plt.ylabel('Kilos (kg)', fontsize=12)
-            plt.xticks(rotation=45, ha='right')
-            plt.grid(axis='y', linestyle='--', alpha=0.6)
-            plt.tight_layout()
-            
-            st.pyplot(fig2)
-            plt.close(fig2) 
-            
-        st.markdown("<br>", unsafe_allow_html=True)
-        with st.expander("Ver tabla de datos detallada"):
-            st.dataframe(df_creacion, use_container_width=True)
+            # Gráfico con datos de la API
+            if not df_grafico.empty:
+                st.subheader("Distribución de Producción por Sector (Datos Validados)")
+                fig, ax = plt.subplots(figsize=(14, 6))
+                sns.barplot(data=df_grafico, x='Lote', y='Cantidad', palette='magma', ax=ax)
+                
+                ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
+                plt.xticks(rotation=45)
+                st.pyplot(fig)
+        else:
+            st.info("No hay datos disponibles en la base de datos. Por favor, sube un archivo.")
 
     except Exception as e:
-        st.error(f"Error al procesar el archivo: {e}")
-
-else:
-    st.info("👋 ¡Hola! Por favor, arrastra un archivo de Excel arriba para comenzar a generar tu Dashboard.")
-           
+        st.error(f"No se pudo obtener el resumen de la API: {e}")        
 
 # ==============================================================================
 # 5. Buscador de Trazabilidad (Conectado a FastAPI)

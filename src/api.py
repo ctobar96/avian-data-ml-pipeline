@@ -149,7 +149,7 @@ def buscar_lote(lote: str, fecha: str):
 from sqlalchemy import func # Importante agregar esto arriba
 
 # ==============================================================================
-# ENDPOINT 3: RESUME (GET)
+# ENDPOINT 3: RESUMEN (GET)
 # ==============================================================================
 @app.get("/resumen-produccion/")
 def obtener_resumen():
