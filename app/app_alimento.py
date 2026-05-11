@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter 
 import requests
+import re
 
 # 1. CONFIGURACIÓN Y URL
 try:
@@ -131,10 +132,17 @@ st.title("🔍 Buscador de Trazabilidad por Lote")
 
 # Obtenemos la lista de lotes para el selector
 lista_lotes = []
+
+# Función de Ordenamiento Natural: Convierte "PICH4A" en ['PICH', 4, 'A'] para ordenar correctamente
+def orden_natural(lote):
+    return [int(texto) if texto.isdigit() else texto.lower() for texto in re.split(r'(\d+)', lote)]
+
+
 try:
     res_lotes =  requests.get(f"{API_URL}/listado-lotes/")
     if res_lotes.status_code == 200:
-        lista_lotes = res_lotes.json().get("lotes", [])
+        lista_bruta = res_lotes.json().get("lotes", [])
+        lista_lotes = sorted(lista_bruta, key=orden_natural)
         if not lista_lotes:
             st.info("No hay lotes disponibles. Sube un archivo para comenzar.")
     else:
