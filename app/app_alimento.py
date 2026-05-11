@@ -129,11 +129,29 @@ if periodo_seleccionado:
 st.markdown("---")
 st.title("🔍 Buscador de Trazabilidad por Lote")
 
+# Obtenemos la lista de lotes para el selector
+lista_lotes = []
+try:
+    res_lotes =  requests.get(f"{API_URL}/listado-lotes/")
+    if res_lotes.status_code == 200:
+        lista_lotes = res_lotes.json().get("lotes", [])
+        if not lista_lotes:
+            st.info("No hay lotes disponibles. Sube un archivo para comenzar.")
+    else:
+        st.error(f"Error al obtener lotes: Código {res_lotes.status_code}")
+        lista_lotes = []
+except Exception as e:
+    st.error(f"Error de conexión al obtener lotes: {e}")
+
+# 2. Dibujamos los controles
 col_busq1, col_busq2, col_busq3 = st.columns([2, 2, 1])
 with col_busq1:
     fecha_input = st.date_input("🗓️ Fecha de Producción")
 with col_busq2:
-    lote_input = st.text_input("📦 Código de Lote", placeholder="Ej: PICH5ACO")
+    if lista_lotes:
+        lote_input = st.selectbox("📦 Código del Sector", options=lista_lotes) 
+    else: 
+        lote_input = st.text_input("📦 Código del Sector", placeholder="Ej: PICH5ACO") # Fallback de emergencia por si la base de datos está vacía
 with col_busq3:
     st.markdown("<br>", unsafe_allow_html=True) 
     boton_buscar = st.button("Buscar Registro", type="primary", use_container_width=True)

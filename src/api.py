@@ -219,3 +219,19 @@ def obtener_resumen(periodo: str = None):
     finally:
         db.close()
   
+
+
+# ==============================================================================
+# ENDPOINT 5: LISTADO DE LOTES PARA EL BUSCADOR DE TRAZABILIDAD
+# ==============================================================================
+@app.get("/listado-lotes/")
+def obtener_lotes():
+    db = SessionLocal()
+    try:
+        # Buscamos todos los lotes únicos y los ordenamos alfabéticamente
+        lotes = db.query(ProduccionAlimento.lote_destino).distinct().all()
+        # Extraemos solo el texto de la respuesta de la base de datos
+        lista_lotes = [l[0] for l in lotes]
+        return {"status": "success", "lotes": lista_lotes}
+    finally:
+        db.close()
