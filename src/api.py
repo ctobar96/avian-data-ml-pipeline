@@ -178,28 +178,34 @@ def obtener_meses():
 # ==============================================================================
 # ENDPOINT 4: RESUMEN (GET)
 # ==============================================================================
-
 @app.get("/resumen-produccion/")
-def obtener_resumen(periodo: str = None): # Recibe "Enero 2026"
+def obtener_resumen(periodo: str = None): 
     db = SessionLocal()
     try:
-        query = db.query(ProduccionAlimento)
+        # 1. Creamos una lista vacía para los filtros
+        filtros = []
         
-        if periodo:
-            # Separamos "Enero 2026" en mes (1) y año (2026)
+        if periodo and periodo != "Todos":
+            # Separamos "Enero 2026" en mes y año
             nombre_mes, anio = periodo.split()
-            meses_inv = {v: k for k, v in {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}.items()}
+            meses_inv = {
+                'Enero': 1, 'Febrero': 2, 'Marzo': 3, 'Abril': 4, 
+                'Mayo': 5, 'Junio': 6, 'Julio': 7, 'Agosto': 8, 
+                'Septiembre': 9, 'Octubre': 10, 'Noviembre': 11, 'Diciembre': 12
+            }
             
-            query = query.filter(
-                extract('month', ProduccionAlimento.fecha_efectiva) == meses_inv[nombre_mes],
-                extract('year', ProduccionAlimento.fecha_efectiva) == int(anio)
-            )
+            # 2. Agregamos las reglas a la lista
+            filtros.append(extract('month', ProduccionAlimento.fecha_efectiva) == meses_inv[nombre_mes])
+            filtros.append(extract('year', ProduccionAlimento.fecha_efectiva) == int(anio))
 
-        total_kg = db.query(func.sum(query.subquery().c.cantidad_kg)).scalar() or 0
+        # 3. Suma Total aplicando los filtros de forma directa (sin subquery)
+        total_kg = db.query(func.sum(ProduccionAlimento.cantidad_kg)).filter(*filtros).scalar() or 0
+        
+        # 4. Agrupación por Lotes aplicando los mismos filtros
         produccion_lotes = db.query(
-            query.subquery().c.lote_destino, 
-            func.sum(query.subquery().c.cantidad_kg)
-        ).group_by(query.subquery().c.lote_destino).all()
+            ProduccionAlimento.lote_destino, 
+            func.sum(ProduccionAlimento.cantidad_kg)
+        ).filter(*filtros).group_by(ProduccionAlimento.lote_destino).all()
         
         return {
             "status": "success",
@@ -207,7 +213,9 @@ def obtener_resumen(periodo: str = None): # Recibe "Enero 2026"
             "mes_actual": periodo or "Todos",
             "datos_lotes": [{"Lote": row[0], "Cantidad": row[1]} for row in produccion_lotes]
         }
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
-  
   
