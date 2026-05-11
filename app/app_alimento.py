@@ -182,14 +182,32 @@ if boton_buscar and lote_input:
 # ==============================================================================
 # 6. FOOTER
 # ==============================================================================
+st.markdown("<br>", unsafe_allow_html=True)
 st.divider()
-f1, f2, f3 = st.columns(3)
-with f1:
-    st.markdown("**Desarrollado por:**")
-    st.write("👨‍💻 Cristian Tobar Morales")
-with f2:
-    st.markdown("**Proyecto:**")
-    st.write("🐔 Avian Data ML Pipeline")
-with f3:
-    st.markdown("**Versión:**")
-    st.write("🚀 1.2.0 (Abril 2026)")
+
+f_col1, f_col2, f_col3 = st.columns(3)
+
+with f_col1:
+    st.markdown("#### **Desarrollado por:**")
+    st.write("👨‍💻 **Cristian Tobar Morales**")
+    st.caption("Magíster en Data Science")
+
+with f_col2:
+    st.markdown("#### **Proyecto:**")
+    st.write("🐔 *Avian Data ML Pipeline*")
+    st.caption("Análisis y Modelado de Datos")
+
+with f_col3:
+    st.markdown("#### **Información:**")
+    st.write("🚀 **Versión:** 1.1.3")
+    st.caption("Última actualización: Mayo 2026")
+
+st.markdown(
+    """
+    <div style='text-align: center; color: grey; padding-top: 20px;'>
+        <p>© 2026 <b>Cristian Tobar Morales</b>. <br> 
+         Todos los derechos reservados. | Esta aplicación es de uso estrictamente profesional y privado.</p>
+    </div>
+    """, 
+     unsafe_allow_html=True
+)
