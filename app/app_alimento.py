@@ -35,38 +35,110 @@ if archivo_subido is not None:
 st.divider()
 
 # ==============================================================================
-# 2. Visualización (Consulta a la API - La Fuente de Verdad)
+# 2. Visualización (Consulta a la API - La Verdad Centralizada)
 # ==============================================================================
-with st.spinner("Consultando datos reales desde la API..."):
+with st.spinner("Actualizando Dashboard con datos reales..."):
     try:
+        # AQUÍ CONSULTAMOS LA VERDAD A LA API
         res_resumen = requests.get(f"{API_URL}/resumen-produccion/")
         
         if res_resumen.status_code == 200:
             datos = res_resumen.json()
+            
+            # KPIs de la API
             total_kg = datos["total_kg"]
-            df_grafico = pd.DataFrame(datos["datos_lotes"])
-
-            # KPIs con datos de la API
+            mes_actual = datos["mes_actual"] # "Enero 2026"
+            
             col1, col2 = st.columns(2)
             with col1:
-                st.metric(label="⚖️ Total De Alimento Fabricado (Kg)", value=f"{int(total_kg):,}".replace(',', '.'))
+                st.metric(label="🗓️ Mes de Producción", value=mes_actual)
             with col2:
-                st.metric(label="📦 Lotes Registrados", value=len(df_grafico))
+                # Formateamos métrica principal con puntos chilenos
+                st.metric(
+                    label="⚖️ Total de Alimento Creado (Kg)", 
+                    value=f"{int(total_kg):,}".replace(',', '.')
+                )
 
-            # Gráfico con datos de la API
+            # --- PREPARACIÓN DEL DATAFRAME DE LA API PARA EL GRÁFICO ---
+            # datos["datos_lotes"] viene de api.py como [{"Lote": "...", "Cantidad": ...}, ...]
+            df_grafico = pd.DataFrame(datos["datos_lotes"])
+            df_grafico.columns = ['Lote', 'Cantidad'] # Aseguramos nombres de columna limpios
+            
+            # ORDENAMIENTO CRÍTICO: Descendente por cantidad
+            df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
+
+            # ==============================================================================
+            # EL GRÁFICO PROFESIONAL AJUSTADO (REPLICA LA IMAGEN OBJETIVO)
+            # ==============================================================================
             if not df_grafico.empty:
                 st.subheader("Distribución de Producción por Sector (Datos Validados)")
-                fig, ax = plt.subplots(figsize=(14, 6))
-                sns.barplot(data=df_grafico, x='Lote', y='Cantidad', palette='magma', ax=ax)
                 
-                ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x):,}".replace(',', '.')))
-                plt.xticks(rotation=45)
+                # 1. Configuración de estética Matplotlib/Seaborn (Fondo blanco)
+                sns.set_theme(style="white") 
+                
+                # 2. Figura Panorámica WIDE (replicando la imagen)
+                fig, ax = plt.subplots(figsize=(16, 6)) # Wide aspect ratio
+
+                # 3. Creación del Barplot profesional con paleta 'magma' secuencial
+                # El hack de hue='Lote' asegura un color secuencial distinto por barra rankeada
+                barplot = sns.barplot(
+                    data=df_grafico,
+                    x="Lote",
+                    y="Cantidad",
+                    hue="Lote", # DIFERENTE COLOR POR RANGO DE BARRA
+                    palette="magma", # Gradiente secuencial exacto de la imagen
+                    legend=False,
+                    ax=ax
+                )
+
+                # 4. Formateo de Ticks Y (Chilean style: separador de miles '.')
+                def format_chilean(x, pos):
+                    return f"{int(x):,}".replace(",", ".")
+
+                ax.yaxis.set_major_formatter(FuncFormatter(format_chilean))
+                
+                # Establecemos límites de Y para dar headroom (aprox como la imagen)
+                ax.set_ylim(0, 320000) 
+                ax.set_yticks([0, 50000, 100000, 150000, 200000, 250000, 300000])
+
+                # 5. Etiquetas de Ejes exactas
+                ax.set_xlabel("Sector", fontsize=12)
+                ax.set_ylabel("Alimento Fabricado (kg)", fontsize=12)
+
+                # 6. Cuadrícula Horizontal Discontinua (Dashed Grid)
+                ax.grid(axis='y', linestyle='--', color='lightgray', alpha=0.7)
+
+                # 7. Anotaciones de Valor formateadas sobre cada barra ('259.430')
+                for container in ax.containers:
+                    for bar in container:
+                        height = bar.get_height()
+                        if height > 0:
+                            # Formateamos kilos enteros con puntos chilenos
+                            formatted_val = f"{int(height):,}".replace(",", ".")
+                            ax.annotate(
+                                formatted_val,
+                                xy=(bar.get_x() + bar.get_width() / 2, height),
+                                xytext=(0, 5), # Label 5 puntos arriba del top de la barra
+                                textcoords="offset points",
+                                ha='center', va='bottom',
+                                fontsize=9, color='black'
+                            )
+
+                # 8. Rotación de Etiquetas X (45 grados derecha)
+                plt.xticks(rotation=45, ha='right') # ha='right' alinea texto rotado
+                
+                # Ajuste de layout tight para que nada se corte
+                plt.tight_layout()
+
+                # Mostrar en Streamlit
                 st.pyplot(fig)
-        else:
-            st.info("No hay datos disponibles en la base de datos. Por favor, sube un archivo.")
+                plt.close(fig) # Liberamos memoria
+            
+            else:
+                st.info("No hay datos históricos disponibles en la base de datos.")
 
     except Exception as e:
-        st.error(f"No se pudo obtener el resumen de la API: {e}")        
+        st.error(f"Error al sincronizar dashboard con la API: {e}")    
 
 # ==============================================================================
 # 5. Buscador de Trazabilidad (Conectado a FastAPI)

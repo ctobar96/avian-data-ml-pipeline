@@ -151,10 +151,26 @@ from sqlalchemy import func # Importante agregar esto arriba
 # ==============================================================================
 # ENDPOINT 3: RESUMEN (GET)
 # ==============================================================================
+def obtener_nombre_mes(fecha):
+    meses = {
+        1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+        5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+        9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+    }
+    return f"{meses[fecha.month]} {fecha.year}"
+
 @app.get("/resumen-produccion/")
 def obtener_resumen():
     db = SessionLocal()
     try:
+        
+        # Buscamos la fecha del primer registro para saber el mes
+        primer_registro = db.query(ProduccionAlimento.fecha_efectiva).first()
+        mes_texto = obtener_nombre_mes(primer_registro[0]) if primer_registro else "Sin Datos"
+        
+        total_kg = db.query(func.sum(ProduccionAlimento.cantidad_kg)).scalar() or 0
+        
+        
         # 1. Sumamos el total de kilos directamente en la base de datos
         total_kg = db.query(func.sum(ProduccionAlimento.cantidad_kg)).scalar() or 0
         
@@ -170,7 +186,9 @@ def obtener_resumen():
         return {
             "status": "success",
             "total_kg": float(total_kg),
+            "mes_actual": mes_texto,
             "datos_lotes": datos_grafico
         }
     finally:
         db.close()
+  
