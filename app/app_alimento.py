@@ -182,7 +182,7 @@ if boton_buscar and lote_input:
             
             if datos_lote.get("status") == "success":
                 st.success("✅ ¡Lote encontrado!")
-                st.info(f"**Lote:** {datos_lote['produccion']['lote']} | **Producto:** {datos_lote['produccion']['descripcion']} | **Total:** {datos_lote['produccion']['cantidad_kg']:,.2f} Kg")
+                st.info(f"**Lote:** {datos_lote['produccion']['lote']} | **Producto:** {datos_lote['produccion']['descripcion']} | **Total:** {datos_lote['produccion']['cantidad_kg']:,.0f} Kg")
                 
                 c1, c2 = st.columns(2)
                 with c1:
