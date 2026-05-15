@@ -88,8 +88,8 @@ if periodo_seleccionado:
                 with col3:
                     st.metric( "🏭 Sectores", len(datos["datos_lotes"]))
             
-                #with col4:
-                    #st.metric("🥇 Sector Top",idxmax(datos["datos_lotes"]))
+                with col4:
+                    st.metric("🥇 Sector Top",idxmax(datos["datos_lotes"]))
 
                # with col4:
                     #st.metric("📈 Variación")
