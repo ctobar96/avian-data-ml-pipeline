@@ -86,7 +86,7 @@ if periodo_seleccionado:
                     st.metric(label="⚖️ Total Alimento (Kg)", value=val_formateado)
                 col3, col4, col5 = st.columns(3)
                 with col3:
-                    st.metric( "🏭 Sectores", len(datos))
+                    st.metric( "🏭 Sectores", len(datos["datos_lotes"]))
             
                 #with col4:
                     #st.metric("🥇 Sector Top")
