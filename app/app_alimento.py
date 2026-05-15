@@ -88,11 +88,11 @@ if periodo_seleccionado:
                 with col3:
                     st.metric( "🏭 Sectores", len(datos))
             
-                with col4:
-                    st.metric("🥇 Sector Top")
+                #with col4:
+                    #st.metric("🥇 Sector Top")
 
-                with col4:
-                    st.metric("📈 Variación")
+               # with col4:
+                    #st.metric("📈 Variación")
                 
                 # --- GRÁFICO (REPLICA DE IMAGEN OBJETIVO) ---
                 if not df_grafico.empty:
