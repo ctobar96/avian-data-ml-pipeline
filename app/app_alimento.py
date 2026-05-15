@@ -24,7 +24,7 @@ st.markdown("Monitorización del volumen de alimento fabricado y consumo de mate
 with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
     archivo_subido = st.file_uploader("Sube tu archivo de producción", type=["xls", "xlsx"])
     if archivo_subido is not None:
-        if st.button("🚀 Inyectar a Supabase"):
+        if st.button("🚀 Inyectar a la base de datos"):
             with st.spinner("Sincronizando..."):
                 try:
                     archivos = {"file": (archivo_subido.name, archivo_subido.getvalue(), "application/vnd.ms-excel")}
@@ -84,7 +84,16 @@ if periodo_seleccionado:
                     # Formateo con puntos para miles (Estilo Chileno)
                     val_formateado = f"{int(total_kg):,}".replace(',', '.')
                     st.metric(label="⚖️ Total Alimento (Kg)", value=val_formateado)
+                col3, col4, col5 = st.columns(3)
+                with col3:
+                    st.metric( "🏭 Sectores", len(datos))
+            
+                with col4:
+                    st.metric("🥇 Sector Top")
 
+                with col4:
+                        st.metric("📈 Variación")
+                
                 # --- GRÁFICO (REPLICA DE IMAGEN OBJETIVO) ---
                 if not df_grafico.empty:
                     st.subheader("Distribución de Producción por Sector")
