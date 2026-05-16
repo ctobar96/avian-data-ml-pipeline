@@ -18,6 +18,11 @@ st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide
 # 2. SECCIÓN DE CARGA (OPCIONAL/EXPANDER)
 # ==============================================================================
 st.title("📊 Dashboard de Producción de Alimento")
+st.set_page_config(
+    page_title= "Dashboard de Producción de Alimento",
+    layout= "wide",
+    page_icon="📊"
+)
 st.markdown("Monitorización del volumen de alimento fabricado y consumo de materias primas.")
 
 
