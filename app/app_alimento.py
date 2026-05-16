@@ -17,7 +17,7 @@ st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide
 # ==============================================================================
 # 2. SECCIÓN DE CARGA (OPCIONAL/EXPANDER)
 # ==============================================================================
-st.title("📊 Dashboard de Producción de Alimento")
+#st.title("📊 Dashboard de Producción de Alimento")
 st.set_page_config(
     page_title= "Dashboard de Producción de Alimento",
     layout= "wide",
