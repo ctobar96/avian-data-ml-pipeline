@@ -112,7 +112,7 @@ if periodo_seleccionado:
                         value="--", 
                         delta="Requiere API", 
                         delta_color="off" # Usa "normal" para verde/rojo automático cuando tengas datos reales
-                        )
+                    )
                 
                 # --- GRÁFICO ---
                 if not df_grafico.empty:

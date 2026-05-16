@@ -179,11 +179,13 @@ def obtener_meses():
 # ENDPOINT 4: RESUMEN (GET)
 # ==============================================================================
 @app.get("/resumen-produccion/")
-def obtener_resumen(periodo: str = None): 
+def obtener_resumen(periodo: str = None, sector: str = None): 
     db = SessionLocal()
     try:
         # 1. Creamos una lista vacía para los filtros
         filtros = []
+        filtros_anterior = [] # PAra el mes anterior
+        total_kg_anterior = 0 # Valor por defecto
         
         if periodo and periodo != "Todos":
             # Separamos "Enero 2026" en mes y año
@@ -194,12 +196,35 @@ def obtener_resumen(periodo: str = None):
                 'Septiembre': 9, 'Octubre': 10, 'Noviembre': 11, 'Diciembre': 12
             }
             
+            mes_num = meses_inv[nombre_mes]
+            anio_num = int(anio)
+            
             # 2. Agregamos las reglas a la lista
-            filtros.append(extract('month', ProduccionAlimento.fecha_efectiva) == meses_inv[nombre_mes])
-            filtros.append(extract('year', ProduccionAlimento.fecha_efectiva) == int(anio))
+            filtros.append(extract('month', ProduccionAlimento.fecha_efectiva) == mes_num)
+            filtros.append(extract('year', ProduccionAlimento.fecha_efectiva) == anio_num)
+            
+            # Para calcular mes anterior
+            if mes_num == 1:
+                mes_ant = 12
+                anio_ant = anio_num - 1
+            else: 
+                mes_ant = mes_num -1
+                anio_ant = anio_num
 
+            filtros_anterior.append(extract('month', ProduccionAlimento.fecha_efectiva) == mes_ant)
+            filtros_anterior.append(extract('year', ProduccionAlimento.fecha_efectiva) == anio_ant)
+            
+        # Filtro de Sector (Se aplica tanto al mes actual como al anterior)
+        if sector and sector != "Todos los Sectores":
+            filtros.append(ProduccionAlimento.lote_destino == sector)
+            filtros_anterior.append(ProduccionAlimento.lote_destino == sector)
+              
         # 3. Suma Total aplicando los filtros de forma directa (sin subquery)
         total_kg = db.query(func.sum(ProduccionAlimento.cantidad_kg)).filter(*filtros).scalar() or 0
+        
+        # Consultamos el total del mes pasado solo si hay filtros de mes anterior
+        if filtros_anterior:
+            total_kg_anterior = db.query(func.sum(ProduccionAlimento.cantidad_kg)).filter(*filtros_anterior).scalar() or 0
         
         # 4. Agrupación por Lotes aplicando los mismos filtros
         produccion_lotes = db.query(
@@ -210,7 +235,9 @@ def obtener_resumen(periodo: str = None):
         return {
             "status": "success",
             "total_kg": float(total_kg),
+            "total_kg_anterior": float(total_kg_anterior), 
             "mes_actual": periodo or "Todos",
+            "sector_actual": sector or "Todos los Sectores",
             "datos_lotes": [{"Lote": row[0], "Cantidad": row[1]} for row in produccion_lotes]
         }
     except Exception as e:
