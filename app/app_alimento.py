@@ -22,7 +22,7 @@ st.markdown("Monitorización del volumen de alimento fabricado y consumo de mate
 
 
 with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
-    archivo_subido = st.file_uploader("Sube tu archivo de producción", type=["xls", "xlsx"])
+    archivo_subido = st.file_uploader("Carga tu archivo de producción", type=["xls", "xlsx"])
     if archivo_subido is not None:
         if st.button("🚀 Inyectar a la base de datos"):
             with st.spinner("Sincronizando..."):
@@ -38,7 +38,7 @@ with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
 st.divider()
 
 # ==============================================================================
-# 3. SELECTOR DE MES (CONSULTA A LA API)
+# 3. SELECTORES DE FILTRO (MES Y SECTOR)
 # ==============================================================================
 periodo_seleccionado = None
 
@@ -75,32 +75,48 @@ if periodo_seleccionado:
                 total_kg = datos["total_kg"]
                 mes_actual = datos["mes_actual"]
                 df_grafico = pd.DataFrame(datos["datos_lotes"])
+                
+                if not df_grafico.empty:
+                    df_grafico.columns = ['Lote', 'Cantidad']
+                    # Ordenamos de mayor a menor (vital para el gráfico y para el TOP)
+                    df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
+                        
+                    # Extraemos el ganador (la fila 0 de la columna 'Lote')
+                    sector_top = df_grafico.iloc[0]['Lote']
+                else:
+                    sector_top = "Sin datos"
 
                 # --- KPIs ---
-                col1, col2 = st.columns(2)
+                st.subheader("📌 Indicadores Generales")
+                
+                col1, col2, col3, col4, col5 = st.columns(5)
                 with col1:
                     st.metric(label="🗓️ Periodo Visualizado", value=mes_actual)
+                    
                 with col2:
                     # Formateo con puntos para miles (Estilo Chileno)
                     val_formateado = f"{int(total_kg):,}".replace(',', '.')
                     st.metric(label="⚖️ Total Alimento (Kg)", value=val_formateado)
-                col3, col4, col5 = st.columns(3)
+
                 with col3:
                     st.metric( "🏭 Sectores", len(datos["datos_lotes"]))
             
-                #with col4:
-                    #st.metric("🥇 Sector Top",datos["datos_lotes"].idxmax())
+                with col4:
+                    st.metric("🥇 Sector Top", value= sector_top)
 
-               # with col5:
-                    #st.metric("📈 Variación")
+                with col5:
+                    # El parámetro 'delta' dibuja la flecha de variación.
+                        # Nota: Para que sea real, tu API deberá calcular el mes anterior en el futuro.
+                    st.metric(
+                        label="📈 Variación vs Mes Ant.", 
+                        value="--", 
+                        delta="Requiere API", 
+                        delta_color="off" # Usa "normal" para verde/rojo automático cuando tengas datos reales
+                        )
                 
-                # --- GRÁFICO (REPLICA DE IMAGEN OBJETIVO) ---
+                # --- GRÁFICO ---
                 if not df_grafico.empty:
-                    st.subheader("Distribución de Producción por Sector")
-                    
-                    df_grafico.columns = ['Lote', 'Cantidad']
-                    df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
-                    
+                    st.subheader("Distribución de Producción por Sector") 
                     sns.set_theme(style="white")
                     fig, ax = plt.subplots(figsize=(16, 6))
                     
