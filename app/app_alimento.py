@@ -213,7 +213,7 @@ if periodo_seleccionado:
                 st.markdown("---")
                 # --- GRÁFICO ---
                 if not df_grafico.empty:
-                    st.subheader("Distribución de Producción por Sector") 
+                    st.subheader("🏭 Distribución de Producción por Sector") 
                     sns.set_theme(style="white")
                     fig, ax = plt.subplots(figsize=(16, 6))
                     
