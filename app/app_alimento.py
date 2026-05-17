@@ -105,26 +105,26 @@ if periodo_seleccionado:
                     st.metric("🥇 Sector Top", value= sector_top)
 
                 with col5:
-                    # Extraemos el valor del mes anterior que nos mandó la API
-                    total_kg_anterior = datos.get("total_kg_anterior", 0)
-                    
-                    if total_kg_anterior > 0:
-                        # Calculamos la variación porcentual
-                        variacion_pct = ((total_kg - total_kg_anterior) / total_kg_anterior) * 100
-                        # Formateamos con 1 decimal y el signo %
-                        delta_str = f"{variacion_pct:.1f}%"
-                    elif total_kg > 0 and total_kg_anterior == 0:
-                        # Si es el primer mes de operaciones y no hay pasado
-                        delta_str = "100% (Nuevo)"
-                    else:
-                        delta_str = None # No hay datos
-                            
-                    st.metric(
-                        label="📈 Variación vs Mes Ant.", 
-                        value=f"{int(total_kg_anterior):,}".replace(',', '.') + " Kg",
-                        delta="Requiere API", 
-                        delta_color="normal" # Usa "normal" para verde/rojo automático cuando tengas datos reales
-                    )
+                        # 1. Extraemos el valor del mes anterior que nos mandó la API
+                        total_kg_anterior = datos.get("total_kg_anterior", 0)
+                        
+                        # 2. Calculamos el porcentaje
+                        if total_kg_anterior > 0:
+                            variacion_pct = ((total_kg - total_kg_anterior) / total_kg_anterior) * 100
+                            delta_str = f"{variacion_pct:.1f}%"
+                        elif total_kg > 0 and total_kg_anterior == 0:
+                            # Si es Enero y Diciembre no existe, marcamos como Nuevo
+                            delta_str = "100% (Sin historial)"
+                        else:
+                            delta_str = None
+                        
+                        # 3. Dibujamos la métrica con los valores dinámicos
+                        st.metric(
+                            label="📈 Variación vs Mes Ant.", 
+                            value=f"{int(total_kg_anterior):,}".replace(',', '.') + " Kg", 
+                            delta=delta_str, # <--- Aquí usamos la variable, no un texto fijo
+                            delta_color="normal" 
+                        )
                 
                 # --- GRÁFICO ---
                 if not df_grafico.empty:
