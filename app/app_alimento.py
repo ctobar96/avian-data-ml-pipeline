@@ -141,6 +141,7 @@ if periodo_seleccionado:
                 # ALERTAS AUTOMÁTICAS (Tu código integrado)
                 # =====================================================
                 # Solo mostramos alertas si realmente hay un mes anterior para comparar
+                # en vez de 10 se puede usar desviación estandar
                 if total_kg_anterior > 0:
                     if variacion_pct > 10:
                         st.success(f"🚀 ¡Excelente! La producción aumentó un {variacion_pct:.1f}% respecto al mes anterior.")
