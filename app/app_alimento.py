@@ -168,19 +168,16 @@ if periodo_seleccionado:
                                 df_mensual = pd.DataFrame(datos_tendencia)
                                 
                                 # =======================================================
-                                # 🛡️ LA CURA DEFINITIVA: Convertir Texto a Número
+                                # 🛡️ LIMPIEZA RADICAL DE DATOS
                                 # =======================================================
-                                # 1. Convertimos a texto por seguridad y le borramos las comas
+                                # 1. Quitamos cualquier coma traicionera que venga de la API
                                 df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(str).str.replace(",", "", regex=False)
                                 
-                                # 2. Forzamos la conversión a número matemático real (float)
-                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce").fillna(0)
-                                
-                                # (Opcional) Puedes borrar o comentar el st.dataframe ahora que sabemos el problema
-                                # st.dataframe(df_mensual, use_container_width=True)
+                                # 2. Forzamos la conversión al tipo de dato matemático 'float'
+                                df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(float)
                                 
                                 # =======================================================
-                                # GRÁFICO
+                                # GRÁFICO (Con candado numérico)
                                 # =======================================================
                                 fig_line = px.line(
                                     df_mensual,
@@ -188,6 +185,9 @@ if periodo_seleccionado:
                                     y="Cantidad",
                                     markers=True
                                 )
+
+                                # 3. OBLIGAMOS a Plotly a usar un eje numérico (linear)
+                                fig_line.update_yaxes(type='linear')
 
                                 fig_line.update_traces(
                                     line=dict(width=3),
@@ -199,7 +199,7 @@ if periodo_seleccionado:
                                     hovermode="x unified",
                                     yaxis_title="Total Alimento (Kg)",
                                     xaxis_title="",
-                                    yaxis_tickformat=",.0f", # Ahora sí formateará millones correctamente
+                                    yaxis_tickformat=",.0f", 
                                     margin=dict(l=20, r=20, t=30, b=20)
                                 )
 
