@@ -40,7 +40,7 @@ with col_actualizar:
                         st.error(f"Error de conexión: {e}")
 
 with col_selector:  
-    st.subheader("🗓️ Selecciona el Mes de Producción que deseas visualizar")
+    st.subheader("🗓️ Selecciona el Mes que deseas visualizar")
     # ==============================================================================
     # 3. SELECTORES DE FILTRO (MES Y SECTOR)
     # ==============================================================================
@@ -55,6 +55,7 @@ with col_selector:
             if lista_periodos:
                 # Selector de Mes en la parte principal (o st.sidebar.selectbox si prefieres)
                 periodo_seleccionado = st.selectbox(
+                    #"🗓️ Selecciona el Mes de Producción que deseas visualizar:",
                     options=lista_periodos,
                     index=0
                 )
