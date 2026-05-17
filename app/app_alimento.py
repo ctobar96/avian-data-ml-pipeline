@@ -21,7 +21,7 @@ st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide
 st.title("📊 Dashboard de Producción de Alimento")
 st.markdown("Monitorización del volumen de alimento fabricado y consumo de materias primas.")
 
-col_actualizar, col_selector = st.columns([1, 2])
+col_actualizar, col_selector = st.columns(2)
 
 with col_actualizar:
     st.subheader("⚡ Actualización de Datos")
@@ -40,7 +40,7 @@ with col_actualizar:
                         st.error(f"Error de conexión: {e}")
 
 with col_selector:  
-    st.subheader("🔍 Filtro de Visualización")
+    st.subheader("🗓️ Selecciona el Mes de Producción que deseas visualizar")
     # ==============================================================================
     # 3. SELECTORES DE FILTRO (MES Y SECTOR)
     # ==============================================================================
@@ -55,7 +55,6 @@ with col_selector:
             if lista_periodos:
                 # Selector de Mes en la parte principal (o st.sidebar.selectbox si prefieres)
                 periodo_seleccionado = st.selectbox(
-                    "🗓️ Selecciona el Mes de Producción que deseas visualizar:",
                     options=lista_periodos,
                     index=0
                 )
