@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter 
+import plotly.express as px
 import requests
 import re
 
@@ -151,6 +152,49 @@ if periodo_seleccionado:
                         st.info(f"📊 La producción se mantuvo relativamente estable con una variación del {variacion_pct:.1f}%.")
                 st.markdown("---") # Una línea separadora antes de pasar al gráfico
                 
+                # =====================================================
+                # TENDENCIA MENSUAL (Tu código integrado)
+                # =====================================================
+                
+                st.subheader("📈 Evolución Mensual")
+                with st.spinner("Cargando historial de producción..."):
+                    try:
+                        # Consultamos la nueva ruta de la API
+                        res_tendencia = requests.get(f"{API_URL}/tendencia-mensual/")
+                        
+                        if res_tendencia.status_code == 200:
+                            datos_tendencia = res_tendencia.json().get("tendencia", [])
+                            
+                            if datos_tendencia:
+                                # Convertimos el JSON limpio de la API en el DataFrame que necesita Plotly
+                                df_mensual = pd.DataFrame(datos_tendencia)
+                                
+                                # TU CÓDIGO EXACTO DE PLOTLY:
+                                fig_line = px.line(
+                                    df_mensual,
+                                    x="Mes",
+                                    y="Cantidad",
+                                    markers=True,
+                                    title="Evolución Mensual de Producción",
+                                    template="plotly_white"
+                                )
+
+                                fig_line.update_layout(
+                                    hovermode="x unified",
+                                    yaxis_title="Total Alimento (Kg)",
+                                    xaxis_title=""
+                                )
+
+                                st.plotly_chart(
+                                    fig_line,
+                                    use_container_width=True
+                                )
+                            else:
+                                st.info("No hay suficientes datos históricos para mostrar una tendencia.")
+                    except Exception as e:
+                        st.error(f"Error al cargar el gráfico de tendencia: {e}")
+                    
+                st.markdown("---")
                 # --- GRÁFICO ---
                 if not df_grafico.empty:
                     st.subheader("Distribución de Producción por Sector") 

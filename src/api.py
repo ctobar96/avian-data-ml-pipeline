@@ -262,3 +262,39 @@ def obtener_lotes():
         return {"status": "success", "lotes": lista_lotes}
     finally:
         db.close()
+        
+# ==============================================================================
+# ENDPOINT 6: Tendencia Histórica Mensual
+# ==============================================================================
+@app.get("/tendencia-mensual/")
+def tendencia_mensual():
+    db =  SessionLocal()
+    try:
+        # Extraemos el año y el mes, y sumamos la cantidad
+        anio = extract('year', ProduccionAlimento.fecha_efectiva)
+        mes = extract('month', ProduccionAlimento.fecha_efectiva)
+        tendencia = db.query(
+            anio.label('anio'),
+            mes.label('mes'),
+            func.sum(ProduccionAlimento.cantidad_kg).label('total_kg')
+        ).group_by('anio', 'mes').order_by('anio', 'mes').all()
+        
+        meses_nombres = {
+            1: 'Ene', 2: 'Feb', 3: 'Mar', 4: 'Abr', 5: 'May', 6: 'Jun',
+            7: 'Jul', 8: 'Ago', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dic'
+        }
+        # Formateamos para que Streamlit reciba "Ene 2026", "Feb 2026", etc.
+        resultado = []
+        
+        for fila in tendencia:
+            mes_texto = f"{meses_nombres[int(fila.mes)]} {int(fila.anio)}"
+            resultado.append({"mes": mes_texto, "Cantidad": float(fila.total_kg)})
+        
+        return {"status": "success", "tendencia": resultado}
+        
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+        
