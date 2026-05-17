@@ -103,7 +103,10 @@ if periodo_seleccionado:
             
                 with col4:
                     st.metric("🥇 Sector Top", value= sector_top)
-
+                
+                # Variable por defecto por si no hay datos históricos
+                variacion_pct = 0
+                
                 with col5:
                         # 1. Extraemos el valor del mes anterior que nos mandó la API
                         total_kg_anterior = datos.get("total_kg_anterior", 0)
@@ -133,6 +136,19 @@ if periodo_seleccionado:
                             delta=delta_str,
                             delta_color="normal" 
                         )
+                
+                # =====================================================
+                # ALERTAS AUTOMÁTICAS (Tu código integrado)
+                # =====================================================
+                # Solo mostramos alertas si realmente hay un mes anterior para comparar
+                if total_kg_anterior > 0:
+                    if variacion_pct > 10:
+                        st.success(f"🚀 ¡Excelente! La producción aumentó un {variacion_pct:.1f}% respecto al mes anterior.")
+                    elif variacion_pct < -10:
+                        st.error(f"⚠️ Atención: La producción disminuyó un {abs(variacion_pct):.1f}% respecto al mes anterior.")
+                    else:
+                        st.info(f"📊 La producción se mantuvo relativamente estable con una variación del {variacion_pct:.1f}%.")
+                st.markdown("---") # Una línea separadora antes de pasar al gráfico
                 
                 # --- GRÁFICO ---
                 if not df_grafico.empty:
