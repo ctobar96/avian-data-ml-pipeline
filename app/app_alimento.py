@@ -170,7 +170,7 @@ if periodo_seleccionado:
                                 
                                 fig_line = px.line(
                                     df_mensual,
-                                    x="Mes",
+                                    x="mes",
                                     y="Cantidad",
                                     markers=True,
                                     template="plotly_white"
