@@ -40,7 +40,7 @@ with col_actualizar:
                         st.error(f"Error de conexión: {e}")
 
 with col_selector:  
-    st.subheader("🗓️ Selecciona el Mes que deseas visualizar")
+    st.subheader("🗓️ Selecciona el Mes que Deseas Visualizar")
     # ==============================================================================
     # 3. SELECTORES DE FILTRO (MES Y SECTOR)
     # ==============================================================================
@@ -259,32 +259,56 @@ if periodo_seleccionado:
                 st.markdown("---")
                 # --- GRÁFICO ---
                 if not df_grafico.empty:
-                    st.subheader("🏭 Distribución de Producción por Sector") 
-                    sns.set_theme(style="white")
-                    fig, ax = plt.subplots(figsize=(16, 6))
-                    
-                    sns.barplot(
-                        data=df_grafico, x="Lote", y="Cantidad", 
-                        hue="Lote", palette="magma", legend=False, ax=ax
+                    st.subheader("🏭 Producción por Sector")
+
+                    # 1. Ordenamos de menor a mayor
+                    # En gráficos horizontales, esto hace que el sector Top quede arriba de todo
+                    df_grafico = df_grafico.sort_values(by="Cantidad", ascending=True)
+
+                    # 2. Creamos el gráfico horizontal
+                    fig_bar = px.bar(
+                        df_grafico,
+                        x="Cantidad",
+                        y="Lote", 
+                        orientation="h",
+                        text="Cantidad",
+                        color="Cantidad",
+                        color_continuous_scale="Plasma"
+                        # Eliminé el template="plotly_white" para que respete tu modo oscuro
                     )
 
-                    # Formateador de eje Y
-                    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
-                    ax.set_ylim(0, 320000)
-                    
-                    # Anotaciones sobre barras
-                    for p in ax.patches:
-                        if p.get_height() > 0:
-                            label = f"{int(p.get_height()):,}".replace(",", ".")
-                            ax.annotate(label, (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                        ha='center', va='bottom', fontsize=9, xytext=(0, 5), 
-                                        textcoords='offset points')
+                    # 3. Formateamos los números fuera de la barra
+                    fig_bar.update_traces(
+                        texttemplate='%{text:,.0f}',
+                        textposition='outside'
+                    )
 
-                    plt.xticks(rotation=45, ha='right')
-                    plt.grid(axis='y', linestyle='--', alpha=0.7)
-                    plt.tight_layout()
-                    st.pyplot(fig)
-                    plt.close(fig)
+                    # 4. Ajustes visuales de alto nivel
+                    fig_bar.update_layout(
+                        height=700,
+                        # ¡Magia pura!: Esto invierte las comas por puntos automáticamente para el estilo chileno
+                        separators=",.", 
+                        xaxis_title="Total Alimento (Kg)",
+                        yaxis_title="",
+                        plot_bgcolor="rgba(0,0,0,0)", 
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        coloraxis_showscale=False, # Ocultamos la leyenda lateral de colores para dar más espacio a las barras
+                        margin=dict(l=20, r=20, t=30, b=20)
+                    )
+
+                    # 5. Le damos un 15% extra al eje X para asegurar que los números no se corten
+                    max_x = df_grafico["Cantidad"].max()
+                    fig_bar.update_xaxes(
+                        showgrid=True, 
+                        gridwidth=1, 
+                        gridcolor='rgba(255,255,255,0.1)', 
+                        range=[0, max_x * 1.15]
+                    )
+
+                    st.plotly_chart(
+                        fig_bar,
+                        use_container_width=True
+                    )
             
             else:
                 st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
