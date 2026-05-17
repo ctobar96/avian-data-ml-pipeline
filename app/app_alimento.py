@@ -167,22 +167,16 @@ if periodo_seleccionado:
                             if datos_tendencia:
                                 df_mensual = pd.DataFrame(datos_tendencia)
                                 
-                                # ===========================================================
-                                # 🛡️ BLINDAJE NUMÉRICO: Limpieza extrema de datos
-                                # ===========================================================
-                                # Si la API manda los kilos como Texto (Object)
-                                if df_mensual["Cantidad"].dtype == 'object' or df_mensual["Cantidad"].dtype == 'O':
-                                    # Le quitamos los puntos de los miles y cambiamos comas por puntos decimales
-                                    df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(str).str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
+                                # =======================================================
+                                # 🔍 RADIOGRAFÍA DE DATOS (Te mostrará la verdad)
+                                # =======================================================
+                                st.info("Tabla de datos recibidos desde la API:")
+                                st.dataframe(df_mensual, use_container_width=True)
                                 
-                                # Forzamos la conversión a números matemáticos reales (float)
-                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce").fillna(0)
-                                # ===========================================================
-
-                                # Ahora sí, el gráfico recibirá números de verdad
+                                # Dibujamos el gráfico limpio
                                 fig_line = px.line(
                                     df_mensual,
-                                    x="mes", # En minúscula como lo arreglaste antes
+                                    x="mes", 
                                     y="Cantidad",
                                     markers=True
                                 )
@@ -197,7 +191,7 @@ if periodo_seleccionado:
                                     hovermode="x unified",
                                     yaxis_title="Total Alimento (Kg)",
                                     xaxis_title="",
-                                    yaxis_tickformat=",.0f",
+                                    # Quitamos la restricción del eje Y para que se autoescale libremente
                                     margin=dict(l=20, r=20, t=30, b=20)
                                 )
 
