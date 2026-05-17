@@ -21,45 +21,49 @@ st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide
 st.title("📊 Dashboard de Producción de Alimento")
 st.markdown("Monitorización del volumen de alimento fabricado y consumo de materias primas.")
 
+col_actualizar, col_selector = st.columns([1, 2])
 
-with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
-    archivo_subido = st.file_uploader("Carga tu archivo de producción", type=["xls", "xlsx"])
-    if archivo_subido is not None:
-        if st.button("🚀 Inyectar a la base de datos"):
-            with st.spinner("Sincronizando..."):
-                try:
-                    archivos = {"file": (archivo_subido.name, archivo_subido.getvalue(), "application/vnd.ms-excel")}
-                    res = requests.post(f"{API_URL}/cargar-excel/", files=archivos)
-                    if res.status_code == 200:
-                        st.success(res.json().get("message"))
-                        st.rerun() # Forzamos recarga para actualizar el selector de meses
-                except Exception as e:
-                    st.error(f"Error de conexión: {e}")
+with col_actualizar:
+    with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
+        archivo_subido = st.file_uploader("Carga tu archivo de producción", type=["xls", "xlsx"])
+        if archivo_subido is not None:
+            if st.button("🚀 Inyectar a la base de datos"):
+                with st.spinner("Sincronizando..."):
+                    try:
+                        archivos = {"file": (archivo_subido.name, archivo_subido.getvalue(), "application/vnd.ms-excel")}
+                        res = requests.post(f"{API_URL}/cargar-excel/", files=archivos)
+                        if res.status_code == 200:
+                            st.success(res.json().get("message"))
+                            st.rerun() # Forzamos recarga para actualizar el selector de meses
+                    except Exception as e:
+                        st.error(f"Error de conexión: {e}")
+
+with col_selector:  
+    st.markdown("### 🔍 Filtro de Visualización")
+    # ==============================================================================
+    # 3. SELECTORES DE FILTRO (MES Y SECTOR)
+    # ==============================================================================
+    periodo_seleccionado = None
+
+    try:
+        # Obtenemos la lista de meses disponibles en la base de datos
+        res_meses = requests.get(f"{API_URL}/listado-meses/")
+        if res_meses.status_code == 200:
+            lista_periodos = res_meses.json().get("periodos", [])
+            
+            if lista_periodos:
+                # Selector de Mes en la parte principal (o st.sidebar.selectbox si prefieres)
+                periodo_seleccionado = st.selectbox(
+                    "🗓️ Selecciona el Mes de Producción que deseas visualizar:",
+                    options=lista_periodos,
+                    index=0
+                )
+            else:
+                st.info("La base de datos está vacía. Sube un archivo para comenzar.")
+    except Exception as e:
+        st.error(f"No se pudo conectar con la API para obtener los periodos: {e}")
 
 st.divider()
-
-# ==============================================================================
-# 3. SELECTORES DE FILTRO (MES Y SECTOR)
-# ==============================================================================
-periodo_seleccionado = None
-
-try:
-    # Obtenemos la lista de meses disponibles en la base de datos
-    res_meses = requests.get(f"{API_URL}/listado-meses/")
-    if res_meses.status_code == 200:
-        lista_periodos = res_meses.json().get("periodos", [])
-        
-        if lista_periodos:
-            # Selector de Mes en la parte principal (o st.sidebar.selectbox si prefieres)
-            periodo_seleccionado = st.selectbox(
-                "🗓️ Selecciona el Mes de Producción que deseas visualizar:",
-                options=lista_periodos,
-                index=0
-            )
-        else:
-            st.info("La base de datos está vacía. Sube un archivo para comenzar.")
-except Exception as e:
-    st.error(f"No se pudo conectar con la API para obtener los periodos: {e}")
 
 # ==============================================================================
 # 4. VISUALIZACIÓN DE MÉTRICAS Y GRÁFICO 
