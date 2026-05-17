@@ -24,7 +24,7 @@ st.markdown("Monitorización del volumen de alimento fabricado y consumo de mate
 col_actualizar, col_selector = st.columns([1, 2])
 
 with col_actualizar:
-    st.subheader("### ⚡ Actualización de Datos")
+    st.subheader("⚡ Actualización de Datos")
     with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
         archivo_subido = st.file_uploader("Carga tu archivo de producción", type=["xls", "xlsx"])
         if archivo_subido is not None:
@@ -40,7 +40,7 @@ with col_actualizar:
                         st.error(f"Error de conexión: {e}")
 
 with col_selector:  
-    st.subheader("### 🔍 Filtro de Visualización")
+    st.subheader("🔍 Filtro de Visualización")
     # ==============================================================================
     # 3. SELECTORES DE FILTRO (MES Y SECTOR)
     # ==============================================================================
