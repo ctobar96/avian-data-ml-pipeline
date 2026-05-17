@@ -110,19 +110,27 @@ if periodo_seleccionado:
                         
                         # 2. Calculamos el porcentaje
                         if total_kg_anterior > 0:
-                            variacion_pct = ((total_kg - total_kg_anterior) / total_kg_anterior) * 100
+                            diferencia_kg = total_kg - total_kg_anterior
+                            variacion_pct = ((diferencia_kg) / total_kg_anterior) * 100
                             delta_str = f"{variacion_pct:.1f}%"
+                            
+                            # Formateamos la diferencia en kilos para mostrarla
+                            # Si es positiva le ponemos un "+", si es negativa el "-" se pone solo
+                            signo = "+" if diferencia_kg > 0 else ""
+                            valor_mostrar = f"{signo}{int(diferencia_kg):,}".replace(',', '.') + " Kg"
+                            
                         elif total_kg > 0 and total_kg_anterior == 0:
-                            # Si es Enero y Diciembre no existe, marcamos como Nuevo
+                            valor_mostrar = "+ " + f"{int(total_kg):,}".replace(',', '.') + " Kg"
                             delta_str = "100% (Sin historial)"
                         else:
+                            valor_mostrar = "0 Kg"
                             delta_str = None
                         
                         # 3. Dibujamos la métrica con los valores dinámicos
                         st.metric(
                             label="📈 Variación vs Mes Ant.", 
-                            value=f"{int(total_kg_anterior):,}".replace(',', '.') + " Kg", 
-                            delta=delta_str, # <--- Aquí usamos la variable, no un texto fijo
+                            value=valor_mostrar, 
+                            delta=delta_str,
                             delta_color="normal" 
                         )
                 
