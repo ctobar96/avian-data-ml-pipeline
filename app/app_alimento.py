@@ -167,15 +167,27 @@ if periodo_seleccionado:
                             
                             if datos_tendencia:
                                 df_mensual = pd.DataFrame(datos_tendencia)
-                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce")
                                 
+                                # ===========================================================
+                                # 🛡️ BLINDAJE NUMÉRICO: Limpieza extrema de datos
+                                # ===========================================================
+                                # Si la API manda los kilos como Texto (Object)
+                                if df_mensual["Cantidad"].dtype == 'object' or df_mensual["Cantidad"].dtype == 'O':
+                                    # Le quitamos los puntos de los miles y cambiamos comas por puntos decimales
+                                    df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(str).str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
+                                
+                                # Forzamos la conversión a números matemáticos reales (float)
+                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce").fillna(0)
+                                # ===========================================================
+
+                                # Ahora sí, el gráfico recibirá números de verdad
                                 fig_line = px.line(
                                     df_mensual,
-                                    x="mes",
+                                    x="mes", # En minúscula como lo arreglaste antes
                                     y="Cantidad",
-                                    markers=True,
-                                    #template="plotly_white"
+                                    markers=True
                                 )
+
                                 fig_line.update_traces(
                                     line=dict(width=3),
                                     marker=dict(size=8),
@@ -186,16 +198,15 @@ if periodo_seleccionado:
                                     hovermode="x unified",
                                     yaxis_title="Total Alimento (Kg)",
                                     xaxis_title="",
-                                    yaxis_tickformat=",.0f", # Formato numérico
-                                    margin=dict(l=20, r=20, t=30, b=20) # Ajusta los márgenes para que respire mejor
+                                    yaxis_tickformat=",.0f",
+                                    margin=dict(l=20, r=20, t=30, b=20)
                                 )
 
                                 st.plotly_chart(fig_line, use_container_width=True)
                             else:
                                 st.info("No hay suficientes datos históricos para mostrar una tendencia.")
                         else:
-                            # 🚨 ESTA ES LA LÍNEA CLAVE QUE REVELARÁ EL PROBLEMA 🚨
-                            st.error(f"Falla en la API. Código: {res_tendencia.status_code}. Detalle: {res_tendencia.text}")
+                            st.error(f"Falla en la API. Código: {res_tendencia.status_code}")
                             
                     except Exception as e:
                         st.error(f"Error de conexión: {e}")
