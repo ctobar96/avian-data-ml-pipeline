@@ -167,19 +167,27 @@ if periodo_seleccionado:
                             
                             if datos_tendencia:
                                 df_mensual = pd.DataFrame(datos_tendencia)
+                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce")
                                 
                                 fig_line = px.line(
                                     df_mensual,
                                     x="mes",
                                     y="Cantidad",
                                     markers=True,
-                                    template="plotly_white"
+                                    #template="plotly_white"
+                                )
+                                fig_line.update_traces(
+                                    line=dict(width=3),
+                                    marker=dict(size=8),
+                                    hovertemplate="<b>%{x}</b><br>Producción: %{y:,.0f} Kg<extra></extra>".replace(",", ".")
                                 )
 
                                 fig_line.update_layout(
                                     hovermode="x unified",
                                     yaxis_title="Total Alimento (Kg)",
-                                    xaxis_title=""
+                                    xaxis_title="",
+                                    yaxis_tickformat=",.0f", # Formato numérico
+                                    margin=dict(l=20, r=20, t=30, b=20) # Ajusta los márgenes para que respire mejor
                                 )
 
                                 st.plotly_chart(fig_line, use_container_width=True)
