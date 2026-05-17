@@ -268,27 +268,29 @@ def obtener_lotes():
 # ==============================================================================
 @app.get("/tendencia-mensual/")
 def tendencia_mensual():
-    db =  SessionLocal()
+    db = SessionLocal()
     try:
-        # Extraemos el año y el mes, y sumamos la cantidad
         anio = extract('year', ProduccionAlimento.fecha_efectiva)
         mes = extract('month', ProduccionAlimento.fecha_efectiva)
+        
+        # EL SECRETO: Agrupar por las variables reales, NO por strings con comillas
         tendencia = db.query(
             anio.label('anio'),
             mes.label('mes'),
             func.sum(ProduccionAlimento.cantidad_kg).label('total_kg')
-        ).group_by('anio', 'mes').order_by('anio', 'mes').all()
+        ).group_by(anio, mes).order_by(anio, mes).all()
         
         meses_nombres = {
             1: 'Ene', 2: 'Feb', 3: 'Mar', 4: 'Abr', 5: 'May', 6: 'Jun',
             7: 'Jul', 8: 'Ago', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dic'
         }
-        # Formateamos para que Streamlit reciba "Ene 2026", "Feb 2026", etc.
-        resultado = []
         
+        resultado = []
         for fila in tendencia:
+            # Protegemos contra sumas nulas
+            suma = fila.total_kg if fila.total_kg is not None else 0
             mes_texto = f"{meses_nombres[int(fila.mes)]} {int(fila.anio)}"
-            resultado.append({"mes": mes_texto, "Cantidad": float(fila.total_kg)})
+            resultado.append({"mes": mes_texto, "Cantidad": float(suma)})
         
         return {"status": "success", "tendencia": resultado}
         
