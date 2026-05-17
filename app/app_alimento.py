@@ -153,29 +153,26 @@ if periodo_seleccionado:
                 st.markdown("---") # Una línea separadora antes de pasar al gráfico
                 
                 # =====================================================
-                # TENDENCIA MENSUAL (Tu código integrado)
+                # TENDENCIA MENSUAL
                 # =====================================================
-                
+                st.markdown("---")
                 st.subheader("📈 Evolución Mensual")
+
                 with st.spinner("Cargando historial de producción..."):
                     try:
-                        # Consultamos la nueva ruta de la API
                         res_tendencia = requests.get(f"{API_URL}/tendencia-mensual/")
                         
                         if res_tendencia.status_code == 200:
                             datos_tendencia = res_tendencia.json().get("tendencia", [])
                             
                             if datos_tendencia:
-                                # Convertimos el JSON limpio de la API en el DataFrame que necesita Plotly
                                 df_mensual = pd.DataFrame(datos_tendencia)
                                 
-                                # TU CÓDIGO EXACTO DE PLOTLY:
                                 fig_line = px.line(
                                     df_mensual,
                                     x="Mes",
                                     y="Cantidad",
                                     markers=True,
-                                    title="Evolución Mensual de Producción",
                                     template="plotly_white"
                                 )
 
@@ -185,14 +182,15 @@ if periodo_seleccionado:
                                     xaxis_title=""
                                 )
 
-                                st.plotly_chart(
-                                    fig_line,
-                                    use_container_width=True
-                                )
+                                st.plotly_chart(fig_line, use_container_width=True)
                             else:
                                 st.info("No hay suficientes datos históricos para mostrar una tendencia.")
+                        else:
+                            # 🚨 ESTA ES LA LÍNEA CLAVE QUE REVELARÁ EL PROBLEMA 🚨
+                            st.error(f"Falla en la API. Código: {res_tendencia.status_code}. Detalle: {res_tendencia.text}")
+                            
                     except Exception as e:
-                        st.error(f"Error al cargar el gráfico de tendencia: {e}")
+                        st.error(f"Error de conexión: {e}")
                     
                 st.markdown("---")
                 # --- GRÁFICO ---
