@@ -150,8 +150,7 @@ if periodo_seleccionado:
                         st.error(f"⚠️ Atención: La producción disminuyó un {abs(variacion_pct):.1f}% respecto al mes anterior.")
                     else:
                         st.info(f"📊 La producción se mantuvo relativamente estable con una variación del {variacion_pct:.1f}%.")
-                st.markdown("---") # Una línea separadora antes de pasar al gráfico
-                
+
                 # =====================================================
                 # TENDENCIA MENSUAL
                 # =====================================================
