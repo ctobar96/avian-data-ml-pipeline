@@ -167,47 +167,55 @@ if periodo_seleccionado:
                             if datos_tendencia:
                                 df_mensual = pd.DataFrame(datos_tendencia)
                                 
-                                # =======================================================
-                                # 🛡️ LIMPIEZA RADICAL DE DATOS
-                                # =======================================================
-                                # 1. Quitamos cualquier coma traicionera que venga de la API
+                                # Limpieza segura para garantizar que son números
                                 df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(str).str.replace(",", "", regex=False)
+                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce").fillna(0)
+
+                                # ===========================================================
+                                # TU ESTILO DE GRÁFICO (Seaborn)
+                                # ===========================================================
+                                sns.set_theme(style="white")
+                                fig_line, ax_line = plt.subplots(figsize=(16, 5))
                                 
-                                # 2. Forzamos la conversión al tipo de dato matemático 'float'
-                                df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(float)
+                                # Trazamos la línea con marcadores grandes (puntos)
+                                sns.lineplot(
+                                    data=df_mensual, x="mes", y="Cantidad", 
+                                    marker="o", color="#3498db", linewidth=3, 
+                                    markersize=10, ax=ax_line
+                                )
+
+                                # 1. Formateador de eje Y (Tu código exacto)
+                                ax_line.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
                                 
-                                # =======================================================
-                                # GRÁFICO (Con candado numérico)
-                                # =======================================================
-                                fig_line = px.line(
-                                    df_mensual,
-                                    x="mes", 
-                                    y="Cantidad",
-                                    markers=True
-                                )
+                                # Aseguramos que el gráfico empiece en 0 y le damos un 15% de espacio arriba para que quepan los números
+                                max_val = df_mensual["Cantidad"].max()
+                                ax_line.set_ylim(0, max_val * 1.15) 
 
-                                # 3. OBLIGAMOS a Plotly a usar un eje numérico (linear)
-                                fig_line.update_yaxes(type='linear')
+                                # 2. Anotaciones sobre los puntos (Equivalente a tu loop de patches)
+                                for index, row in df_mensual.iterrows():
+                                    label = f"{int(row['Cantidad']):,}".replace(",", ".")
+                                    ax_line.annotate(
+                                        label, 
+                                        (row['mes'], row['Cantidad']), 
+                                        ha='center', va='bottom', 
+                                        fontsize=10, fontweight='bold', color="#2c3e50",
+                                        xytext=(0, 10), textcoords='offset points'
+                                    )
 
-                                fig_line.update_traces(
-                                    line=dict(width=3),
-                                    marker=dict(size=8),
-                                    hovertemplate="<b>%{x}</b><br>Producción: %{y:,.0f} Kg<extra></extra>".replace(",", ".")
-                                )
-
-                                fig_line.update_layout(
-                                    hovermode="x unified",
-                                    yaxis_title="Total Alimento (Kg)",
-                                    xaxis_title="",
-                                    yaxis_tickformat=",.0f", 
-                                    margin=dict(l=20, r=20, t=30, b=20)
-                                )
-
-                                st.plotly_chart(fig_line, use_container_width=True)
+                                # 3. Estilos de grilla y limpieza (Tu código exacto)
+                                ax_line.set_ylabel("Total Alimento (Kg)", labelpad=15)
+                                ax_line.set_xlabel("") # Ocultamos el título "mes" para que quede más limpio
+                                
+                                plt.grid(axis='y', linestyle='--', alpha=0.7)
+                                sns.despine() # Quita la línea de arriba y de la derecha para un look moderno
+                                plt.tight_layout()
+                                
+                                st.pyplot(fig_line)
+                                plt.close(fig_line)
                             else:
                                 st.info("No hay suficientes datos históricos para mostrar una tendencia.")
                         else:
-                            st.error(f"Falla en la API. Código: {res_tendencia.status_code}")
+                            st.error("Error en la API al obtener la tendencia.")
                             
                     except Exception as e:
                         st.error(f"Error de conexión: {e}")
