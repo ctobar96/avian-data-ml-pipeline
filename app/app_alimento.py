@@ -55,7 +55,7 @@ with col_selector:
             if lista_periodos:
                 # Selector de Mes en la parte principal (o st.sidebar.selectbox si prefieres)
                 periodo_seleccionado = st.selectbox(
-                    "",
+                    "Selecciona período",
                     options=lista_periodos,
                     index=0,
                     label_visibility="collapsed"
