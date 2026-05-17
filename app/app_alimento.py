@@ -257,65 +257,34 @@ if periodo_seleccionado:
                         st.error(f"Error de conexión: {e}")
                     
                 st.markdown("---")
-                col_graf1, col_graf2 = st.columns([2, 1])
-                
                 # --- GRÁFICO ---
-                with col_graf1:
-                    if not df_grafico.empty:
-                        st.subheader("🏭 Producción por Sector")
+                if not df_grafico.empty:
+                    st.subheader("🏭 Distribución de Producción por Sector") 
+                    sns.set_theme(style="white")
+                    fig, ax = plt.subplots(figsize=(16, 6))
+                    
+                    sns.barplot(
+                        data=df_grafico, x="Lote", y="Cantidad", 
+                        hue="Lote", palette="magma", legend=False, ax=ax
+                    )
 
-                        # 1. Aseguramos que la Cantidad sea un número puro (blindaje)
-                        df_grafico["Cantidad"] = pd.to_numeric(df_grafico["Cantidad"], errors="coerce").fillna(0)
+                    # Formateador de eje Y
+                    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
+                    ax.set_ylim(0, 320000)
+                    
+                    # Anotaciones sobre barras
+                    for p in ax.patches:
+                        if p.get_height() > 0:
+                            label = f"{int(p.get_height()):,}".replace(",", ".")
+                            ax.annotate(label, (p.get_x() + p.get_width() / 2., p.get_height()), 
+                                        ha='center', va='bottom', fontsize=9, xytext=(0, 5), 
+                                        textcoords='offset points')
 
-                        # 2. Ordenamos de MAYOR a MENOR (Estándar para gráficos verticales)
-                        df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
-
-                        # 3. Formateamos el texto para que tenga los puntos de miles
-                        df_grafico["Texto_Visible"] = df_grafico["Cantidad"].apply(lambda x: f"{int(x):,}".replace(",", "."))
-
-                        # 4. Creamos el gráfico VERTICAL (orientación por defecto)
-                        fig_bar = px.bar(
-                            df_grafico,
-                            x="Lote",        # Ahora los lotes van abajo
-                            y="Cantidad",    # Las cantidades determinan la altura
-                            text="Texto_Visible", 
-                            color="Cantidad",
-                            color_continuous_scale="Plasma"
-                        )
-
-                        # 5. Posicionamos los números sobre cada barra
-                        fig_bar.update_traces(
-                            textposition='outside',
-                            textfont=dict(color='white') 
-                        )
-
-                        # 6. Ajustes visuales de fondo y ejes
-                        fig_bar.update_layout(
-                            height=600,
-                            xaxis_title="", # Dejamos limpio el eje X para no ser redundantes
-                            yaxis_title="Total Alimento (Kg)",
-                            plot_bgcolor="rgba(0,0,0,0)", 
-                            paper_bgcolor="rgba(0,0,0,0)",
-                            coloraxis_showscale=False, 
-                            margin=dict(l=20, r=20, t=30, b=20)
-                        )
-
-                        # 7. Ajustes del Eje Y (Zoom hacia arriba)
-                        max_y = df_grafico["Cantidad"].max()
-                        fig_bar.update_yaxes(
-                            showgrid=True, 
-                            gridwidth=1, 
-                            gridcolor='rgba(255,255,255,0.1)', 
-                            range=[0, max_y * 1.15] # 15% de espacio extra en el techo
-                        )
-
-                        # 8. Inclinamos los nombres de los sectores para que no se superpongan
-                        fig_bar.update_xaxes(tickangle=-45)
-
-                        st.plotly_chart(
-                            fig_bar,
-                            use_container_width=True
-                        )
+                    plt.xticks(rotation=45, ha='right')
+                    plt.grid(axis='y', linestyle='--', alpha=0.7)
+                    plt.tight_layout()
+                    st.pyplot(fig)
+                    plt.close(fig)
             
             else:
                 st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
