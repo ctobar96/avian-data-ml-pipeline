@@ -264,48 +264,53 @@ if periodo_seleccionado:
                     if not df_grafico.empty:
                         st.subheader("🏭 Producción por Sector")
 
-                        # 1. Ordenamos de menor a mayor
-                        # En gráficos horizontales, esto hace que el sector Top quede arriba de todo
-                        df_grafico = df_grafico.sort_values(by="Cantidad", ascending=True)
+                        # 1. Aseguramos que la Cantidad sea un número puro (blindaje)
+                        df_grafico["Cantidad"] = pd.to_numeric(df_grafico["Cantidad"], errors="coerce").fillna(0)
 
-                        # 2. Creamos el gráfico horizontal
+                        # 2. Ordenamos de MAYOR a MENOR (Estándar para gráficos verticales)
+                        df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
+
+                        # 3. Formateamos el texto para que tenga los puntos de miles
+                        df_grafico["Texto_Visible"] = df_grafico["Cantidad"].apply(lambda x: f"{int(x):,}".replace(",", "."))
+
+                        # 4. Creamos el gráfico VERTICAL (orientación por defecto)
                         fig_bar = px.bar(
                             df_grafico,
-                            x="Cantidad",
-                            y="Lote", 
-                            orientation="h",
-                            text="Cantidad",
+                            x="Lote",        # Ahora los lotes van abajo
+                            y="Cantidad",    # Las cantidades determinan la altura
+                            text="Texto_Visible", 
                             color="Cantidad",
                             color_continuous_scale="Plasma"
                         )
 
-                        # 3. Formateamos los números fuera de la barra
+                        # 5. Posicionamos los números sobre cada barra
                         fig_bar.update_traces(
-                            texttemplate='%{text:,.0f}',
-                            textposition='outside'
+                            textposition='outside',
+                            textfont=dict(color='white') 
                         )
 
-                        # 4. Ajustes visuales de alto nivel
+                        # 6. Ajustes visuales de fondo y ejes
                         fig_bar.update_layout(
-                            height=700,
-                            # ¡Magia pura!: Esto invierte las comas por puntos automáticamente para el estilo chileno
-                            separators=",.", 
-                            xaxis_title="Total Alimento (Kg)",
-                            yaxis_title="",
+                            height=600,
+                            xaxis_title="", # Dejamos limpio el eje X para no ser redundantes
+                            yaxis_title="Total Alimento (Kg)",
                             plot_bgcolor="rgba(0,0,0,0)", 
                             paper_bgcolor="rgba(0,0,0,0)",
-                            coloraxis_showscale=False, # Ocultamos la leyenda lateral de colores para dar más espacio a las barras
+                            coloraxis_showscale=False, 
                             margin=dict(l=20, r=20, t=30, b=20)
                         )
 
-                        # 5. Le damos un 15% extra al eje X para asegurar que los números no se corten
-                        max_x = df_grafico["Cantidad"].max()
-                        fig_bar.update_xaxes(
+                        # 7. Ajustes del Eje Y (Zoom hacia arriba)
+                        max_y = df_grafico["Cantidad"].max()
+                        fig_bar.update_yaxes(
                             showgrid=True, 
                             gridwidth=1, 
                             gridcolor='rgba(255,255,255,0.1)', 
-                            range=[0, max_x * 1.15]
+                            range=[0, max_y * 1.15] # 15% de espacio extra en el techo
                         )
+
+                        # 8. Inclinamos los nombres de los sectores para que no se superpongan
+                        fig_bar.update_xaxes(tickangle=-45)
 
                         st.plotly_chart(
                             fig_bar,
