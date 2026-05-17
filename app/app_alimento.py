@@ -57,7 +57,8 @@ with col_selector:
                 periodo_seleccionado = st.selectbox(
                     "",
                     options=lista_periodos,
-                    index=0
+                    index=0,
+                    label_visibility="collapsed"
                 )
             else:
                 st.info("La base de datos está vacía. Sube un archivo para comenzar.")
