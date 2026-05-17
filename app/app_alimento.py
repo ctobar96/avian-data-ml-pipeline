@@ -168,12 +168,20 @@ if periodo_seleccionado:
                                 df_mensual = pd.DataFrame(datos_tendencia)
                                 
                                 # =======================================================
-                                # 🔍 RADIOGRAFÍA DE DATOS (Te mostrará la verdad)
+                                # 🛡️ LA CURA DEFINITIVA: Convertir Texto a Número
                                 # =======================================================
-                                st.info("Tabla de datos recibidos desde la API:")
-                                st.dataframe(df_mensual, use_container_width=True)
+                                # 1. Convertimos a texto por seguridad y le borramos las comas
+                                df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(str).str.replace(",", "", regex=False)
                                 
-                                # Dibujamos el gráfico limpio
+                                # 2. Forzamos la conversión a número matemático real (float)
+                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce").fillna(0)
+                                
+                                # (Opcional) Puedes borrar o comentar el st.dataframe ahora que sabemos el problema
+                                # st.dataframe(df_mensual, use_container_width=True)
+                                
+                                # =======================================================
+                                # GRÁFICO
+                                # =======================================================
                                 fig_line = px.line(
                                     df_mensual,
                                     x="mes", 
@@ -191,7 +199,7 @@ if periodo_seleccionado:
                                     hovermode="x unified",
                                     yaxis_title="Total Alimento (Kg)",
                                     xaxis_title="",
-                                    # Quitamos la restricción del eje Y para que se autoescale libremente
+                                    yaxis_tickformat=",.0f", # Ahora sí formateará millones correctamente
                                     margin=dict(l=20, r=20, t=30, b=20)
                                 )
 
