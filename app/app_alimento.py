@@ -196,7 +196,15 @@ if periodo_seleccionado:
                                 )
 
                                 # 1. Formateador de eje Y (Tu código exacto)
-                                ax_line.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
+                                
+                                def formato_abreviado(x, pos):
+                                    if x >= 1000000:
+                                        return f"{x/1000000:.2f}M" # 2.25M
+                                    elif x >= 1000:
+                                        return f"{x/1000:.0f}K" # 2.3K
+                                    else:
+                                        return str(int(x)) # 900
+                                ax_line.yaxis.set_major_formatter(FuncFormatter(formato_abreviado))
                                 
                                 # Aseguramos que el gráfico empiece en 0 y le damos un 15% de espacio arriba para que quepan los números
                                 min_val = df_mensual["Cantidad"].min()
