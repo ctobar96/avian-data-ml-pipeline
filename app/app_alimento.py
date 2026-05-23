@@ -340,10 +340,7 @@ if periodo_seleccionado:
                         # 2. BLINDAJE EXTREMO PARA PLOTLY
                         # Obligamos a Pandas a ignorar cualquier formato previo y convertir esto en un Float matemático puro.
                         # Si hay algún texto raro o coma flotando, lo forzará a un número limpio.
-                        top10["Valor_Plotly"] = pd.to_numeric(
-                            top10["Cantidad"].astype(str).replace(r'[^\d.]', '', regex=True), 
-                            errors="coerce"
-                        ).fillna(0)
+                        top10["Valor_Plotly"] = top10["Cantidad"].astype(float)
                         
                         # 3. Dibujamos usando NUESTRA NUEVA COLUMNA ("Valor_Plotly")
                         fig_pie = px.pie(
