@@ -318,12 +318,12 @@ if periodo_seleccionado:
 
                         # 6. Limpieza visual
                         ax.set_ylabel("") 
-                        ax.set_xlabel("Total Alimento (Kg)", labelpad=15, color="white")
                             
                         # Grilla vertical suave
                         plt.grid(axis='x', linestyle='--', alpha=0.15, color='#ffffff')
                         sns.despine(left=True, bottom=False) 
-                            
+                        ax.set_xticks([]) 
+                        
                         plt.tight_layout()
                         st.pyplot(fig)
                         plt.close(fig)
