@@ -285,7 +285,7 @@ if periodo_seleccionado:
                         legend=False, 
                         ax=ax,
                         edgecolor="#cccccc", # Gris claro
-                        linewidth=1.5
+                        linewidth=1.0
                     )
 
                     # 4. Formateador de eje X (Porque ahora los números están abajo)
