@@ -334,7 +334,7 @@ if periodo_seleccionado:
                         st.subheader("📊 Participación (Top 10)")
                         
                         # 1. Hacemos una copia aislada de las 10 primeras filas (ya ordenadas por el gráfico de barras)
-                        top10 = df_grafico.head(10).copy()
+                        top10 = df_grafico.head(10).copy().reset_index(drop=True) 
                         
                         # 2. BLINDAJE EXTREMO PARA PLOTLY
                         # Obligamos a Pandas a ignorar cualquier formato previo y convertir esto en un Float matemático puro.
