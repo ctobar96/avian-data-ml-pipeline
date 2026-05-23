@@ -341,6 +341,8 @@ if periodo_seleccionado:
                         # Si hay algún texto raro o coma flotando, lo forzará a un número limpio.
                         top10["Valor_Plotly"] = top10["Cantidad"].astype(float)
                         
+                        st.write(top10[['Lote', 'Valor_Plotly']])
+
                         # 3. Dibujamos usando NUESTRA NUEVA COLUMNA ("Valor_Plotly")
                         fig_pie = px.pie(
                             top10,
