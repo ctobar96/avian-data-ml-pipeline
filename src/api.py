@@ -238,7 +238,7 @@ def obtener_resumen(periodo: str = None, sector: str = None):
             "total_kg_anterior": float(total_kg_anterior), 
             "mes_actual": periodo or "Todos",
             "sector_actual": sector or "Todos los Sectores",
-            "datos_lotes": [{"Lote": row[0], "Cantidad": row[1]} for row in produccion_lotes]
+            "datos_lotes": [{"Lote": row[0], "Cantidad": float(row[1])} for row in produccion_lotes]
         }
     except Exception as e:
         from fastapi import HTTPException
