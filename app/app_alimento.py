@@ -357,7 +357,9 @@ if periodo_seleccionado:
                             textposition='inside',
                             textinfo='percent+label',
                             # Le decimos a Plotly que le ponga los puntos de miles solo visualmente al pasar el mouse
-                            hovertemplate="<b>%{label}</b><br>Cantidad: %{value:,.0f} Kg<br>Participación: %{percent}<extra></extra>"
+                            hovertemplate="<b>%{label}</b><br>Cantidad: %{value:,.0f} Kg<br>Participación: %{percent}<extra></extra>",
+                            textfont=dict(size=11),  # Tamaño de fuente uniforme
+                            insidetextorientation='radial' 
                         )
 
                         fig_pie.update_layout(
