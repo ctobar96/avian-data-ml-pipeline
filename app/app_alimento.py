@@ -260,28 +260,59 @@ if periodo_seleccionado:
                 # --- GRÁFICO ---
                 if not df_grafico.empty:
                     st.subheader("🏭 Distribución de Producción por Sector") 
-                    sns.set_theme(style="white")
-                    fig, ax = plt.subplots(figsize=(16, 6))
                     
+                    # 1. ORDENAR LOS DATOS (Mayor a menor para que el Top quede arriba)
+                    df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
+                    
+                    # 2. ESTILO MODO OSCURO (Fondo transparente)
+                    plt.rcdefaults()
+                    plt.rc('axes', edgecolor='#666666', labelcolor='#cccccc')
+                    plt.rc('xtick', color='#cccccc')
+                    plt.rc('ytick', color='#cccccc')
+
+                    # Ajustamos el tamaño (más alto para dar espacio a todas las barras horizontales)
+                    fig, ax = plt.subplots(figsize=(12, 8))
+                    fig.patch.set_alpha(0.0) 
+                    ax.patch.set_alpha(0.0)
+                    
+                    # 3. GRÁFICO HORIZONTAL (Invertimos X e Y)
                     sns.barplot(
-                        data=df_grafico, x="Lote", y="Cantidad", 
-                        hue="Lote", palette="magma", legend=False, ax=ax
+                        data=df_grafico, 
+                        x="Cantidad", # Ahora la cantidad define el largo de la barra
+                        y="Lote",     # Los lotes van en el eje vertical
+                        hue="Lote", 
+                        palette="magma", 
+                        legend=False, 
+                        ax=ax
                     )
 
-                    # Formateador de eje Y
-                    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
-                    ax.set_ylim(0, 320000)
+                    # 4. Formateador de eje X (Porque ahora los números están abajo)
+                    ax.xaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
                     
-                    # Anotaciones sobre barras
+                    # Damos un 15% extra despacio a la derecha para que los textos no se corten
+                    max_val = df_grafico["Cantidad"].max()
+                    ax.set_xlim(0, max_val * 1.15)
+                    
+                    # 5. Anotaciones sobre barras horizontales
                     for p in ax.patches:
-                        if p.get_height() > 0:
-                            label = f"{int(p.get_height()):,}".replace(",", ".")
-                            ax.annotate(label, (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                        ha='center', va='bottom', fontsize=9, xytext=(0, 5), 
-                                        textcoords='offset points')
+                        width = p.get_width() # Medimos el largo de la barra, no la altura
+                        if width > 0:
+                            label = f"{int(width):,}".replace(",", ".")
+                            # Posicionamos el texto a la derecha de la barra
+                            ax.annotate(label, 
+                                        (width, p.get_y() + p.get_height() / 2.), 
+                                        ha='left', va='center', 
+                                        fontsize=10, fontweight='bold', color='white', 
+                                        xytext=(5, 0), textcoords='offset points')
 
-                    plt.xticks(rotation=45, ha='right')
-                    plt.grid(axis='y', linestyle='--', alpha=0.7)
+                    # 6. Limpieza visual
+                    ax.set_ylabel("") # Quitamos el título "Lote" porque es obvio
+                    ax.set_xlabel("Total Alimento (Kg)", labelpad=15, color="white")
+                    
+                    # Grilla vertical suave para guiar el ojo
+                    plt.grid(axis='x', linestyle='--', alpha=0.15, color='#ffffff')
+                    sns.despine(left=True, bottom=False) # Quitamos bordes innecesarios
+                    
                     plt.tight_layout()
                     st.pyplot(fig)
                     plt.close(fig)
