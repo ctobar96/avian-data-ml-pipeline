@@ -258,77 +258,81 @@ if periodo_seleccionado:
                     
                 st.markdown("---")
                 # --- GRÁFICO ---
-# -------------------------------------------------------------------
-                # SECCIÓN: DISTRIBUCIÓN Y PARTICIPACIÓN UNIFICADA
-                # -------------------------------------------------------------------
                 if not df_grafico.empty:
-                    
-                    # 🛡️ BLINDAJE ÚNICO: Respetamos y aseguramos el formato float8 de tu base de datos
-                    df_grafico["Cantidad"] = pd.to_numeric(df_grafico["Cantidad"], errors="coerce").fillna(0)
-
-                    # Creamos las dos columnas para la interfaz lado a lado
-                    col1, col2 = st.columns([6, 4]) 
-
-                    # ==========================================
-                    # COLUMNA 1: GRÁFICO DE BARRAS VERTICALES
-                    # ==========================================
-                    with col1:
-                        st.subheader("🏭 Producción por Sector")
+                    col_graf1, col_graf2 = st.columns([6, 4]) 
+                    with col_graf1:
                         
-                        # Ordenamos de mayor a menor
-                        df_barras = df_grafico.sort_values(by="Cantidad", ascending=False)
+                        st.subheader("🏭 Distribución de Producción por Sector") 
+                            
+                        # 1. ORDENAR LOS DATOS (Mayor a menor para que el Top quede arriba)
+                        df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
                         
-                        # Creamos el formateo visual solo para la etiqueta de texto, sin alterar la matemática
-                        df_barras["Texto_Visible"] = df_barras["Cantidad"].apply(lambda x: f"{int(x):,}".replace(",", "."))
-                        
-                        fig_bar = px.bar(
-                            df_barras,
-                            x="Lote",        
-                            y="Cantidad",    
-                            text="Texto_Visible", 
-                            color="Cantidad",
-                            color_continuous_scale="Plasma"
+                        # 2. ESTILO MODO OSCURO (Fondo transparente)
+                        plt.rcdefaults()
+                        plt.rc('axes', edgecolor='#666666', labelcolor='#cccccc')
+                        plt.rc('xtick', color='#cccccc')
+                        plt.rc('ytick', color='#cccccc')
+
+                        # Ajustamos el tamaño (más alto para dar espacio a todas las barras horizontales)
+                        fig, ax = plt.subplots(figsize=(12, 8))
+                        fig.patch.set_alpha(0.0) 
+                        ax.patch.set_alpha(0.0)
+                            
+                        # 3. GRÁFICO HORIZONTAL (Invertimos X e Y)
+                        sns.barplot(
+                            data=df_grafico, 
+                            x="Cantidad", # Ahora la cantidad define el largo de la barra
+                            y="Lote",     # Los lotes van en el eje vertical
+                            hue="Lote", 
+                            palette="magma", 
+                            legend=False, 
+                            ax=ax,
+                            edgecolor="#cccccc", # Gris claro
+                            linewidth=1
                         )
 
-                        fig_bar.update_traces(
-                            textposition='outside',
-                            textfont=dict(color='white') 
-                        )
+                        # 4. Formateador de eje X (Porque ahora los números están abajo)
+                        ax.xaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
+                            
+                        # Damos un 15% extra despacio a la derecha para que los textos no se corten
+                        max_val = df_grafico["Cantidad"].max()
+                        ax.set_xlim(0, max_val * 1.15)
+                            
+                        # 5. Anotaciones sobre barras horizontales
+                        for p in ax.patches:
+                            width = p.get_width() # Medimos el largo de la barra, no la altura
+                            if width > 0:
+                                label = f"{int(width):,}".replace(",", ".")
+                                # Posicionamos el texto a la derecha de la barra
+                                ax.annotate(label, 
+                                    (width, p.get_y() + p.get_height() / 2.), 
+                                    ha='left', va='center', 
+                                    fontsize=10, fontweight='bold', color='white', 
+                                     xytext=(5, 0), textcoords='offset points')
 
-                        fig_bar.update_layout(
-                            height=600,
-                            xaxis_title="", 
-                            yaxis_title="Total Alimento (Kg)",
-                            plot_bgcolor="rgba(0,0,0,0)", 
-                            paper_bgcolor="rgba(0,0,0,0)",
-                            coloraxis_showscale=False, 
-                            margin=dict(l=20, r=20, t=30, b=20)
-                        )
+                        # 6. Limpieza visual
+                        ax.set_ylabel("") # Quitamos el título "Lote" porque es obvio
+                        ax.set_xlabel("Total Alimento (Kg)", labelpad=15, color="white")
+                            
+                        # Grilla vertical suave para guiar el ojo
+                        plt.grid(axis='x', linestyle='--', alpha=0.15, color='#ffffff')
+                        sns.despine(left=True, bottom=False) # Quitamos bordes innecesarios
+                            
+                        plt.tight_layout()
+                        st.pyplot(fig)
+                        plt.close(fig)
 
-                        max_y = df_barras["Cantidad"].max()
-                        fig_bar.update_yaxes(
-                            showgrid=True, 
-                            gridwidth=1, 
-                            gridcolor='rgba(255,255,255,0.1)', 
-                            range=[0, max_y * 1.15] 
-                        )
-                        fig_bar.update_xaxes(tickangle=-45)
-
-                        st.plotly_chart(fig_bar, use_container_width=True)
-
-                    # ==========================================
-                    # COLUMNA 2: GRÁFICO DE DONA (Participación)
-                    # ==========================================
-                    with col2:
+                    with col_graf2:
                         st.subheader("📊 Participación (Top 10)")
-
-                        # Como df_grafico ya es numérico puro, nlargest funciona de forma nativa e impecable
+                        df_grafico["Cantidad"] = pd.to_numeric(df_grafico["Cantidad"], errors="coerce").fillna(0)
+                        
+                        # 1. Obtenemos el Top 10
                         top10 = df_grafico.nlargest(10, "Cantidad")
-
+                        
                         fig_pie = px.pie(
                             top10,
                             names="Lote",      
-                            values="Cantidad", # Consume los números puros directamente para calcular %
+                            values="Cantidad", 
                             hole=0.5,
                             color_discrete_sequence=px.colors.sequential.Plasma 
                         )
