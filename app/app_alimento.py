@@ -334,13 +334,22 @@ if periodo_seleccionado:
                     with col_graf2:
                         st.subheader("📊 Participación (Top 10)")
                         
-                        # 1. Obtenemos el Top 10 (Ya viene blindado numéricamente desde arriba)
-                        top10 = df_grafico.nlargest(10, "Cantidad")
+                        # 1. Hacemos una copia aislada de las 10 primeras filas (ya ordenadas por el gráfico de barras)
+                        top10 = df_grafico.head(10).copy()
                         
+                        # 2. BLINDAJE EXTREMO PARA PLOTLY
+                        # Obligamos a Pandas a ignorar cualquier formato previo y convertir esto en un Float matemático puro.
+                        # Si hay algún texto raro o coma flotando, lo forzará a un número limpio.
+                        top10["Valor_Plotly"] = pd.to_numeric(
+                            top10["Cantidad"].astype(str).replace(r'[^\d.]', '', regex=True), 
+                            errors="coerce"
+                        ).fillna(0)
+                        
+                        # 3. Dibujamos usando NUESTRA NUEVA COLUMNA ("Valor_Plotly")
                         fig_pie = px.pie(
                             top10,
                             names="Lote",      
-                            values="Cantidad", # Consume los floats limpios directamente
+                            values="Valor_Plotly", # Plotly ahora se verá obligado a leer los números reales
                             hole=0.5,
                             color_discrete_sequence=px.colors.sequential.Plasma 
                         )
@@ -348,6 +357,7 @@ if periodo_seleccionado:
                         fig_pie.update_traces(
                             textposition='inside',
                             textinfo='percent+label',
+                            # Le decimos a Plotly que le ponga los puntos de miles solo visualmente al pasar el mouse
                             hovertemplate="<b>%{label}</b><br>Cantidad: %{value:,.0f} Kg<br>Participación: %{percent}<extra></extra>"
                         )
 
