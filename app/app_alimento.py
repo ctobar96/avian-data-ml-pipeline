@@ -271,7 +271,7 @@ if periodo_seleccionado:
                     plt.rc('ytick', color='#cccccc')
 
                     # Ajustamos el tamaño (más alto para dar espacio a todas las barras horizontales)
-                    fig, ax = plt.subplots(figsize=(16, 6))
+                    fig, ax = plt.subplots(figsize=(12, 8))
                     fig.patch.set_alpha(0.0) 
                     ax.patch.set_alpha(0.0)
                     
