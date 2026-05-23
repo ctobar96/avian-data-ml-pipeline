@@ -283,7 +283,9 @@ if periodo_seleccionado:
                         hue="Lote", 
                         palette="magma", 
                         legend=False, 
-                        ax=ax
+                        ax=ax,
+                        edgecolor="#cccccc", # Gris claro
+                        linewidth=1.5
                     )
 
                     # 4. Formateador de eje X (Porque ahora los números están abajo)
