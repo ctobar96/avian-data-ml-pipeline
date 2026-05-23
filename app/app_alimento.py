@@ -6,6 +6,7 @@ from matplotlib.ticker import FuncFormatter
 import plotly.express as px
 import requests
 import re
+import plotly.graph_objects as go
 
 # 1. CONFIGURACIÓN Y URL
 try:
@@ -344,13 +345,16 @@ if periodo_seleccionado:
                         st.write(top10.dtypes)
                         st.write(top10[['Lote', 'Valor_Plotly']].to_dict())
                         # 3. Dibujamos usando NUESTRA NUEVA COLUMNA ("Valor_Plotly")
-                        fig_pie = px.pie(
-                            top10,
-                            names="Lote",      
-                            values="Valor_Plotly", # Plotly ahora se verá obligado a leer los números reales
+                      
+                        fig_pie = go.Figure(data=[go.Pie(
+                            labels=top10["Lote"].tolist(),
+                            values=top10["Valor_Plotly"].tolist(),  # ← listas Python puras, sin pandas
                             hole=0.5,
-                            color_discrete_sequence=px.colors.sequential.Plasma 
-                        )
+                            textposition='inside',
+                            textinfo='percent+label',
+                            hovertemplate="<b>%{label}</b><br>Cantidad: %{value:,.0f} Kg<br>Participación: %{percent}<extra></extra>",
+                            marker=dict(colors=px.colors.sequential.Plasma)
+                        )])
 
                         fig_pie.update_traces(
                             textposition='inside',
