@@ -318,10 +318,11 @@ if periodo_seleccionado:
 
                         # 6. Limpieza visual
                         ax.set_ylabel("") 
-                            
+                        ax.set_xlabel("")  
+                        
                         # Grilla vertical suave
                         plt.grid(axis='x', linestyle='--', alpha=0.15, color='#ffffff')
-                        sns.despine(left=True, bottom=False) 
+                        sns.despine(left=True, bottom=True) 
                         ax.set_xticks([]) 
                         
                         plt.tight_layout()
