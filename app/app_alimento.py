@@ -277,11 +277,13 @@ if periodo_seleccionado:
                     
                     # 3. GRÁFICO HORIZONTAL (Invertimos X e Y)
                     sns.barplot(
-                        data=df_grafico, x="Lote", y="Cantidad", 
-                        hue="Lote", palette="magma", legend=False, ax=ax,
-                        # SOLUCIÓN DE VISIBILIDAD: Un borde claro para contraste
-                        edgecolor="#cccccc", # Gris claro
-                        linewidth=1.5        # Grosor de la línea
+                        data=df_grafico, 
+                        x="Cantidad", # Ahora la cantidad define el largo de la barra
+                        y="Lote",     # Los lotes van en el eje vertical
+                        hue="Lote", 
+                        palette="magma", 
+                        legend=False, 
+                        ax=ax
                     )
 
                     # 4. Formateador de eje X (Porque ahora los números están abajo)
