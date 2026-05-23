@@ -342,10 +342,7 @@ if periodo_seleccionado:
                         # Si hay algún texto raro o coma flotando, lo forzará a un número limpio.
                         top10["Valor_Plotly"] = top10["Cantidad"].astype(float)
                         
-                        st.write(top10.dtypes)
-                        st.write(top10[['Lote', 'Valor_Plotly']].to_dict())
                         # 3. Dibujamos usando NUESTRA NUEVA COLUMNA ("Valor_Plotly")
-                      
                         fig_pie = go.Figure(data=[go.Pie(
                             labels=top10["Lote"].tolist(),
                             values=top10["Valor_Plotly"].tolist(),  # ← listas Python puras, sin pandas
