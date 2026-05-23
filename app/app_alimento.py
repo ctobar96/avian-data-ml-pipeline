@@ -271,19 +271,17 @@ if periodo_seleccionado:
                     plt.rc('ytick', color='#cccccc')
 
                     # Ajustamos el tamaño (más alto para dar espacio a todas las barras horizontales)
-                    fig, ax = plt.subplots(figsize=(12, 8))
+                    fig, ax = plt.subplots(figsize=(16, 6))
                     fig.patch.set_alpha(0.0) 
                     ax.patch.set_alpha(0.0)
                     
                     # 3. GRÁFICO HORIZONTAL (Invertimos X e Y)
                     sns.barplot(
-                        data=df_grafico, 
-                        x="Cantidad", # Ahora la cantidad define el largo de la barra
-                        y="Lote",     # Los lotes van en el eje vertical
-                        hue="Lote", 
-                        palette="magma", 
-                        legend=False, 
-                        ax=ax
+                        data=df_grafico, x="Lote", y="Cantidad", 
+                        hue="Lote", palette="magma", legend=False, ax=ax,
+                        # SOLUCIÓN DE VISIBILIDAD: Un borde claro para contraste
+                        edgecolor="#cccccc", # Gris claro
+                        linewidth=1.5        # Grosor de la línea
                     )
 
                     # 4. Formateador de eje X (Porque ahora los números están abajo)
