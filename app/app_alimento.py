@@ -258,11 +258,12 @@ if periodo_seleccionado:
                     
                 st.markdown("---")
                 # --- GRÁFICO ---
-                col_graf1, col_graf2 = st.columns([3, 1])
-                with col_graf1:
-                    if not df_grafico.empty:
-                        st.subheader("🏭 Distribución de Producción por Sector") 
+                if not df_grafico.empty:
+                    col_graf1, col_graf2 = st.columns([6, 4])
+                    with col_graf1:
                         
+                        st.subheader("🏭 Distribución de Producción por Sector") 
+                            
                         # 1. ORDENAR LOS DATOS (Mayor a menor para que el Top quede arriba)
                         df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
                         
@@ -276,7 +277,7 @@ if periodo_seleccionado:
                         fig, ax = plt.subplots(figsize=(12, 8))
                         fig.patch.set_alpha(0.0) 
                         ax.patch.set_alpha(0.0)
-                        
+                            
                         # 3. GRÁFICO HORIZONTAL (Invertimos X e Y)
                         sns.barplot(
                             data=df_grafico, 
@@ -292,11 +293,11 @@ if periodo_seleccionado:
 
                         # 4. Formateador de eje X (Porque ahora los números están abajo)
                         ax.xaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}".replace(",", ".")))
-                        
+                            
                         # Damos un 15% extra despacio a la derecha para que los textos no se corten
                         max_val = df_grafico["Cantidad"].max()
                         ax.set_xlim(0, max_val * 1.15)
-                        
+                            
                         # 5. Anotaciones sobre barras horizontales
                         for p in ax.patches:
                             width = p.get_width() # Medimos el largo de la barra, no la altura
@@ -304,64 +305,55 @@ if periodo_seleccionado:
                                 label = f"{int(width):,}".replace(",", ".")
                                 # Posicionamos el texto a la derecha de la barra
                                 ax.annotate(label, 
-                                            (width, p.get_y() + p.get_height() / 2.), 
-                                            ha='left', va='center', 
-                                            fontsize=10, fontweight='bold', color='white', 
-                                            xytext=(5, 0), textcoords='offset points')
+                                    (width, p.get_y() + p.get_height() / 2.), 
+                                    ha='left', va='center', 
+                                    fontsize=10, fontweight='bold', color='white', 
+                                     xytext=(5, 0), textcoords='offset points')
 
                         # 6. Limpieza visual
                         ax.set_ylabel("") # Quitamos el título "Lote" porque es obvio
                         ax.set_xlabel("Total Alimento (Kg)", labelpad=15, color="white")
-                        
+                            
                         # Grilla vertical suave para guiar el ojo
                         plt.grid(axis='x', linestyle='--', alpha=0.15, color='#ffffff')
                         sns.despine(left=True, bottom=False) # Quitamos bordes innecesarios
-                        
+                            
                         plt.tight_layout()
                         st.pyplot(fig)
                         plt.close(fig)
 
-                with col_graf2:
-                    st.subheader("📊 Participación (Top 10)")
-                    # 1. Filtramos el Top 10 usando las variables reales
-                    top10 = df_grafico.nlargest(10, "Cantidad")
+                    with col_graf2:
+                        st.subheader("📊 Participación (Top 10)")
 
-                    # 2. Creamos el gráfico de dona
-                    fig_pie = px.pie(
-                        top10,
-                        names="Lote",      # Tu columna real de sectores
-                        values="Cantidad", # Tu columna real de kilos
-                        hole=0.5,
-                        # Usamos la misma paleta de las barras para mantener la coherencia visual
-                        color_discrete_sequence=px.colors.sequential.Plasma 
-                    )
+                        # Reciclamos df_grafico ¡Sin llamar a la API de nuevo!
+                        top10 = df_grafico.nlargest(10, "Cantidad")
 
-                    # 3. Configuramos la información visualizada
-                    fig_pie.update_traces(
-                        textposition='inside',
-                        textinfo='percent+label', # Muestra el nombre y el % dentro del gráfico
-                        # Formateamos el hover para que muestre los kilos con separador de miles
-                        hovertemplate="<b>%{label}</b><br>Cantidad: %{value:,.0f} Kg<br>Participación: %{percent}<extra></extra>"
-                    )
+                        fig_pie = px.pie(
+                            top10,
+                            names="Lote",      
+                            values="Cantidad", 
+                            hole=0.5,
+                            color_discrete_sequence=px.colors.sequential.Plasma 
+                        )
 
-                    # 4. Ajustes de fondo oscuro y formato
-                    fig_pie.update_layout(
-                        plot_bgcolor="rgba(0,0,0,0)",
-                        paper_bgcolor="rgba(0,0,0,0)",
-                        font=dict(color="white"),
-                        showlegend=False, # Ocultamos la leyenda externa porque el nombre ya está en textinfo (ahorra espacio)
-                        separators=",.",  # Formato numérico estándar
-                        margin=dict(t=30, b=20, l=20, r=20)
-                    )
+                        fig_pie.update_traces(
+                            textposition='inside',
+                            textinfo='percent+label',
+                            hovertemplate="<b>%{label}</b><br>Cantidad: %{value:,.0f} Kg<br>Participación: %{percent}<extra></extra>"
+                        )
 
-                    st.plotly_chart(
-                        fig_pie,
-                        use_container_width=True
-                    )
-                    
-                
-            else:
-                st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
+                        fig_pie.update_layout(
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            font=dict(color="white"),
+                            showlegend=False, 
+                            separators=",.",  
+                            margin=dict(t=30, b=20, l=20, r=20)
+                        )
+
+                        st.plotly_chart(fig_pie, use_container_width=True)
+                else:
+                    st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
         except Exception as e:
             st.error(f"Error al procesar visualización: {e}")
 
