@@ -259,7 +259,7 @@ if periodo_seleccionado:
                 st.markdown("---")
                 # --- GRÁFICO ---
                 if not df_grafico.empty:
-                    col_graf1, col_graf2 = st.columns([6, 4])
+                    col_graf1, col_graf2 = st.columns([6, 4]) 
                     with col_graf1:
                         
                         st.subheader("🏭 Distribución de Producción por Sector") 
@@ -325,9 +325,14 @@ if periodo_seleccionado:
                     with col_graf2:
                         st.subheader("📊 Participación (Top 10)")
 
-                        # Reciclamos df_grafico ¡Sin llamar a la API de nuevo!
-                        top10 = df_grafico.nlargest(10, "Cantidad")
-
+                        # 1. Obtenemos el Top 10
+                        top10 = df_grafico.nlargest(10, "Cantidad").copy()
+                        
+                        # 2. LA CURA: Asegurarnos de que Cantidad sea un número matemático puro
+                        # Le quitamos cualquier punto o coma de formato previo y lo pasamos a float
+                        top10["Cantidad"] = top10["Cantidad"].astype(str).str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
+                        top10["Cantidad"] = pd.to_numeric(top10["Cantidad"], errors="coerce").fillna(0)
+                        
                         fig_pie = px.pie(
                             top10,
                             names="Lote",      
