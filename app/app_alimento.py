@@ -84,7 +84,6 @@ if periodo_seleccionado:
                 df_grafico = pd.DataFrame(datos["datos_lotes"])
                 
                 if not df_grafico.empty:
-                    df_grafico.columns = ['Lote', 'Cantidad']
                     # Ordenamos de mayor a menor (vital para el gráfico y para el TOP)
                     df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
                         
