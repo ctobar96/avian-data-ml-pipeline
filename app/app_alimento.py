@@ -324,14 +324,10 @@ if periodo_seleccionado:
 
                     with col_graf2:
                         st.subheader("📊 Participación (Top 10)")
-
-                        # 1. Obtenemos el Top 10
-                        top10 = df_grafico.nlargest(10, "Cantidad").copy()
+                        df_grafico["Cantidad"] = pd.to_numeric(df_grafico["Cantidad"], errors="coerce").fillna(0)
                         
-                        # 2. LA CURA: Asegurarnos de que Cantidad sea un número matemático puro
-                        # Le quitamos cualquier punto o coma de formato previo y lo pasamos a float
-                        top10["Cantidad"] = top10["Cantidad"].astype(str).str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
-                        top10["Cantidad"] = pd.to_numeric(top10["Cantidad"], errors="coerce").fillna(0)
+                        # 1. Obtenemos el Top 10
+                        top10 = df_grafico.nlargest(10, "Cantidad")
                         
                         fig_pie = px.pie(
                             top10,
