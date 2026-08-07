@@ -24,6 +24,23 @@ El proyecto está construido bajo una arquitectura de microservicios para separa
 
 Para correr este proyecto en tu máquina local, sigue estos pasos:
 
+```bash
+# 1. Entra a la carpeta del proyecto
+cd tu-repositorio
+
+# 2. Crea el entorno virtual limpio
+python3 -m venv env
+
+# 3. Activa el entorno
+source env/bin/activate
+
+# 4. Instala las librerías necesarias (si tienes el archivo)
+pip install -r requirements.txt
+
+# 5. Abre Visual Studio Code conectado a Linux
+code .
+```
+
 1. **Clona el repositorio e instala las dependencias:**
    ```bash
    git clone [https://github.com/TU_USUARIO/avian-data-ml-pipeline.git](https://github.com/TU_USUARIO/avian-data-ml-pipeline.git)

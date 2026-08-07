@@ -25,7 +25,7 @@ TestResults.xml
 .data/ 
 
 #Ignorar entorno virtual de Python
-venv/
+env_avian/
 
 # Ignorar extension .xls y .csv
 *.xls
@@ -33,3 +33,5 @@ venv/
 
 # URI de conexión
 .env
+env_avian/
+env_avian/
