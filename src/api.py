@@ -160,18 +160,21 @@ def obtener_meses():
         periodos = db.query(
             extract('month', ProduccionAlimento.fecha_efectiva).label('mes'),
             extract('year', ProduccionAlimento.fecha_efectiva).label('anio')
-        ).distinct().order_by(
-            desc('anio'), # Primero ordena por el año más reciente (ej. 2026 antes que 2025)
-            desc('mes')# Luego por el mes más reciente (ej. Marzo antes que Febrero)
-        ).all()
-        
+        ).distinct().all()
+
+        periodos_ordenados = sorted(
+            periodos,
+            key=lambda p: (int(p.anio), int(p.mes)),
+            reverse=True  # Orden descendente: del más reciente al más antiguo
+        )
         meses_nombres = {
             1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
             7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
         }
         
         # Formateamos para el selector de Streamlit: "Enero 2026"
-        resultado = [f"{meses_nombres[int(p.mes)]} {int(p.anio)}" for p in periodos]
+        resultado = [f"{meses_nombres[int(p.mes)]} {int(p.anio)}" for p in periodos_ordenados]
+
         return {"status": "success", "periodos": resultado}
     finally:
         db.close()
