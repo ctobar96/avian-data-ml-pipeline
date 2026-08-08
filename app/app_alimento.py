@@ -40,25 +40,25 @@ with col_actualizar:
                     except Exception as e:
                         st.error(f"Error de conexión: {e}")
 
+
+# ==============================================================================
+# 3. SELECTORES DE FILTRO (MES Y SECTOR)
+# ==============================================================================
 with col_selector:  
     st.subheader("🗓️ Selecciona el Mes que Deseas Visualizar")
-    # ==============================================================================
-    # 3. SELECTORES DE FILTRO (MES Y SECTOR)
-    # ==============================================================================
     periodo_seleccionado = None
 
     try:
-        # Obtenemos la lista de meses disponibles en la base de datos
-        res_meses = requests.get(f"{API_URL}/listado-meses/")
+        res_meses = requests.get(f"{API_URL}/listado-meses/")  # Obtenemos la lista de meses disponibles en la base de datos
         if res_meses.status_code == 200:
-            lista_periodos = res_meses.json().get("periodos", [])
+            lista_periodos = res_meses.json().get("periodos", []) # La Api entrega la lista ordenada
             
             if lista_periodos:
                 # Selector de Mes en la parte principal (o st.sidebar.selectbox si prefieres)
                 periodo_seleccionado = st.selectbox(
                     "Selecciona período",
                     options=lista_periodos,
-                    index=0,
+                    index=0, #El index 0 siempre será el mes más reciente gracias a la API
                     label_visibility="collapsed"
                 )
             else:

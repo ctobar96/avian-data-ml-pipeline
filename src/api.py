@@ -2,7 +2,8 @@
 from fastapi import FastAPI, UploadFile, File
 import pandas as pd
 import io
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, extract, desc
+from sqlalchemy import func 
 from src.database import engine
 from src.models_db import ProduccionAlimento, ConsumoInsumosMacros, ConsumoInsumosMicros
 from sqlalchemy import extract # Importante para filtrar por mes/año
@@ -147,8 +148,6 @@ def buscar_lote(lote: str, fecha: str):
         }
     finally:
         db.close()
-from sqlalchemy import func # Importante agregar esto arriba
-
 
 # ==============================================================================
 # ENDPOINT 3: Listado de meses disponibles
@@ -161,7 +160,10 @@ def obtener_meses():
         periodos = db.query(
             extract('month', ProduccionAlimento.fecha_efectiva).label('mes'),
             extract('year', ProduccionAlimento.fecha_efectiva).label('anio')
-        ).distinct().all()
+        ).distinct().order_by(
+            desc('anio'), # Primero ordena por el año más reciente (ej. 2026 antes que 2025)
+            desc('mes')# Luego por el mes más reciente (ej. Marzo antes que Febrero)
+        ).all()
         
         meses_nombres = {
             1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
