@@ -2,8 +2,8 @@
 from fastapi import FastAPI, UploadFile, File
 import pandas as pd
 import io
-from sqlalchemy.orm import sessionmaker, extract, desc
-from sqlalchemy import func 
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import func, extract, desc
 from src.database import engine
 from src.models_db import ProduccionAlimento, ConsumoInsumosMacros, ConsumoInsumosMicros
 from sqlalchemy import extract # Importante para filtrar por mes/año
