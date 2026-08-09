@@ -173,7 +173,7 @@ def obtener_meses():
         }
         
         # Formateamos para el selector de Streamlit: "Enero 2026"
-        resultado = [f"{meses_nombres[int(p.mes)]} {int(p.anio)}" for p in periodos_ordenados]
+        resultado = [f"{meses_nombres[int(p.mes)]} {int(p.anio)}" for p in periodos_ordenados] 
 
         return {"status": "success", "periodos": resultado}
     finally:
