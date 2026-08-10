@@ -403,7 +403,7 @@ if periodo_seleccionado:
                                 # AJUSTE NUEVO: Enviar nombres largos al final
                                 # ==========================================
                                 # Aseguramos que los nombres sean texto para poder contar sus letras
-                                pivot.index = pivot.index.astype(str)
+                                pivot.index.name = pivot.index.astype(str)
                                 
                                 # 1. Separamos los nombres en dos grupos usando 12 caracteres como límite
                                 nombres_normales = [lote for lote in pivot.index if len(lote) <= 12]
