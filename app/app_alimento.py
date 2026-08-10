@@ -398,7 +398,7 @@ if periodo_seleccionado:
                                     fill_value=0
                                 )
                                 # Cambiar nombre lote_destino para que se vea en el gráfico
-                                pivot.index.name = "Sector"
+                                pivot.index.name = "Sector / Lote "
                                 # ==========================================
                                 # AJUSTE NUEVO: Enviar nombres largos al final
                                 # ==========================================
@@ -417,22 +417,11 @@ if periodo_seleccionado:
                                 # (Ponemos los normales primero y los largos se van al fondo)
                                 pivot = pivot.loc[nombres_normales + nombres_largos]
 
-
-
-
-
-                                # Para que el texto no se corte al visualizar y muestre el nombre completo
-                                # Convertimos el índice ("Sector") en una columna normal de datos
-                                pivot = pivot.reset_index()
-
-                                # Aislamos solo las columnas de los meses (nos saltamos la col 0 que es "Sector")
-                                columnas_meses = pivot.columns[1:]
-
-                                # Calculamos mínimos y máximos EXCLUSIVAMENTE de los números
-                                min_val = pivot[columnas_meses].values.min()
-                                max_val = pivot[columnas_meses].values.max()
-
                                 formato_chileno = lambda x: f"{int(x):,}".replace(",", ".")
+
+                                # AJUSTE 2: Barra de Leyenda de Calor (HTML)
+                                min_val = pivot.values.min()
+                                max_val = pivot.values.max()
 
                                 st.markdown(
                                     f"""
@@ -460,9 +449,9 @@ if periodo_seleccionado:
                                 # axis=None asegura que el color se calcule usando TODA la tabla
                                 pivot_heatmap = (
                                     pivot.style
-                                    .background_gradient(cmap="viridis", axis=None, subset= columnas_meses)
-                                    .format(formato_chileno, subset= columnas_meses) # Formateamos con separador de miles y sin decimales
-                                    .set_properties(**{"text-align": "center"}, subset=columnas_meses) # Centramos los números
+                                    .background_gradient(cmap="viridis", axis=None)
+                                    .format(formato_chileno) # Formateamos con separador de miles y sin decimales
+                                    .set_properties(**{"text-align": "center"}) # Centramos los números
                                     .set_table_styles(estilos_encabezados)      # Aplicamos la negrita arriba y a la izquierda
                                 )
 
