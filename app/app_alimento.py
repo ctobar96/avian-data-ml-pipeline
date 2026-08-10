@@ -398,12 +398,12 @@ if periodo_seleccionado:
                                     fill_value=0
                                 )
                                 # Cambiar nombre lote_destino para que se vea en el gráfico
-                                pivot.index,name = "Sector"
+                                pivot.index.name = "Sector"
                                 # ==========================================
                                 # AJUSTE NUEVO: Enviar nombres largos al final
                                 # ==========================================
                                 # Aseguramos que los nombres sean texto para poder contar sus letras
-                                pivot.index.name = pivot.index.astype(str)
+                                pivot.index = pivot.index.astype(str)
                                 
                                 # 1. Separamos los nombres en dos grupos usando 12 caracteres como límite
                                 nombres_normales = [lote for lote in pivot.index if len(lote) <= 12]
