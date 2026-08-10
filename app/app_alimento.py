@@ -556,7 +556,7 @@ with f_col2:
 with f_col3:
     st.markdown("#### **Información:**")
     st.write("🚀 **Versión:** 1.1.3")
-    st.caption("Última actualización: Mayo 2026")
+    st.caption("Última actualización: Agosto 2026")
 
 st.markdown(
     """
