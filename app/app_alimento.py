@@ -389,48 +389,29 @@ if periodo_seleccionado:
                             df_heat = pd.DataFrame(datos_historicos)
 
                             if not df_heat.empty:
-                                # Creamos la matriz pivot
-                                pivot =  df_heat.pivot_table(
-                                    values = "cantidad",
-                                    index = "lote_destino",
-                                    columns = "mes_formateado",
+                                # 1. Creamos la matriz pivot exactamente igual
+                                pivot = df_heat.pivot_table(
+                                    values="cantidad",
+                                    index="lote_destino",
+                                    columns="mes_formateado", 
                                     aggfunc="sum",
-                                    fill_value = 0
+                                    fill_value=0
                                 )
-                                # Forzamos a que las filas y columnas sean texto puro
-                                pivot.index = pivot.index.astype(str)
-                                pivot.columns = pivot.columns.astype(str)
-
-                                # 👁️ MODO DEBUG: Esto te mostrará la tabla en pantalla. 
-                                # Si ves puros ceros aquí, el problema está en los datos. 
-                                # Si ves los kilos correctos, el gráfico se dibujará perfecto.
-                                st.write("🔍 Vista previa de la matriz (Debug):")
-                                st.dataframe(pivot)
-
-                                # Generar el mapa de calor 
-                                fig_heat = px.imshow(
-                                    pivot, 
-                                    color_continuous_scale="Viridis",
-                                    aspect="auto",
-                                    text_auto=".0f",
-                                    labels={
-                                        "x": "Mes",
-                                        "y": "Sector",
-                                        "color": "Producción (kg)"
-                                    }
-                                )
-                                # Le decimos a Plotly que respete las categorías de texto
-                                fig_heat.update_xaxes(type='category')
-                                fig_heat.update_yaxes(type='category')
                                 
-                                fig_heat.update_layout(
-                                    height=500,
-                                    template="plotly_dark",
-                                    margin=dict(t=30, b=20, l=20, r=20)
+                                # Le decimos a Pandas que pinte el fondo de las celdas según su valor
+                                # axis=None asegura que el color se calcule usando TODA la tabla
+                                pivot_heatmap = (
+                                    pivot.style
+                                    .background_gradient(cmap="viridis", axis=None)
+                                    .format("{:,.0f}") # Formateamos con separador de miles y sin decimales
                                 )
 
-                                # Mostrar en Streamlit
-                                st.plotly_chart(fig_heat, use_container_width=True)
+                                # 2. Lo mostramos usando st.dataframe, que soporta estilos de Pandas
+                                st.dataframe(
+                                    pivot_heatmap, 
+                                    use_container_width=True,
+                                    height=600
+                                )
 
                             else:
                                 st.warning("No hay suficientes datos históricos para el mapa de calor.")                                
