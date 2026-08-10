@@ -397,6 +397,8 @@ if periodo_seleccionado:
                                     aggfunc="sum",
                                     fill_value=0
                                 )
+                                # Cambiar nombre lote_destino para que se vea en el gráfico
+                                pivot.index.name = "Sector de Consumo"
                                 # ==========================================
                                 # AJUSTE NUEVO: Enviar nombres largos al final
                                 # ==========================================
