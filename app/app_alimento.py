@@ -391,8 +391,8 @@ if periodo_seleccionado:
                             if not df_heat.empty:
                                 # 1. Creamos la matriz pivot exactamente igual
                                 pivot = df_heat.pivot_table(
-                                    values="cantidad",
-                                    index="lote_destino",
+                                    values="Cantidad",
+                                    index="Sector",
                                     columns="mes_formateado", 
                                     aggfunc="sum",
                                     fill_value=0
