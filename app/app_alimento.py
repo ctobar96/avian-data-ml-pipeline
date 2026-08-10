@@ -398,6 +398,24 @@ if periodo_seleccionado:
                                     fill_value=0
                                 )
 
+                                # ==========================================
+                                # AJUSTE NUEVO: Enviar nombres largos al final
+                                # ==========================================
+                                # Aseguramos que los nombres sean texto para poder contar sus letras
+                                pivot.index = pivot.index.astype(str)
+                                
+                                # 1. Separamos los nombres en dos grupos usando 12 caracteres como límite
+                                nombres_normales = [lote for lote in pivot.index if len(lote) <= 12]
+                                nombres_largos   = [lote for lote in pivot.index if len(lote) > 12]
+                                
+                                # 2. Ordenamos cada grupo alfabéticamente por separado
+                                nombres_normales.sort()
+                                nombres_largos.sort()
+                                
+                                # 3. Reordenamos la tabla completa usando .loc 
+                                # (Ponemos los normales primero y los largos se van al fondo)
+                                pivot = pivot.loc[nombres_normales + nombres_largos]
+
                                 formato_chileno = lambda x: f"{int(x):,}".replace(",", ".")
 
                                 # AJUSTE 2: Barra de Leyenda de Calor (HTML)
