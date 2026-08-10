@@ -417,12 +417,23 @@ if periodo_seleccionado:
                                     unsafe_allow_html=True
                                 )
                                 
+                                estilos_encabezados = [
+                                    {
+                                        "selector": "th", # "th" significa Table Header (Encabezados)
+                                        "props": [
+                                            ("font-weight", "bold"),  # Letra en negrita
+                                            ("text-align", "center")  # Texto centrado
+                                        ]
+                                    }
+                                ]
                                 # Le decimos a Pandas que pinte el fondo de las celdas según su valor
                                 # axis=None asegura que el color se calcule usando TODA la tabla
                                 pivot_heatmap = (
                                     pivot.style
                                     .background_gradient(cmap="viridis", axis=None)
                                     .format(formato_chileno) # Formateamos con separador de miles y sin decimales
+                                    .set_properties(**{"text-align": "center"}) # Centramos los números
+                                    .set_table_styles(estilos_encabezados)      # Aplicamos la negrita arriba y a la izquierda
                                 )
 
                                 # 2. Lo mostramos usando st.dataframe, que soporta estilos de Pandas
