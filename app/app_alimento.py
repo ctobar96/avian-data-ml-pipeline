@@ -390,11 +390,11 @@ if periodo_seleccionado:
 
                             if not df_heat.empty:
                                 # Creamos la matriz pivot
-                                pivot =  df_heat.pivot(
+                                pivot =  df_heat.pivot_table(
                                     values = "cantidad",
                                     index = "lote_destino",
-                                    columns = "Mes",
-                                    aggfunc = "sum",
+                                    columns = "mes_formateado",
+                                    aggfunc="sum",
                                     fill_value = 0
                                 )
                                 # Generar el mapa de calor 
@@ -419,16 +419,14 @@ if periodo_seleccionado:
                                 st.plotly_chart(fig_heat, use_container_width=True)
 
                             else:
-                                st.warning("⚠️ No hay suficientes datos históricos para el mapa de calor.")                                
+                                st.warning("No hay suficientes datos históricos para el mapa de calor.")                                
                         else:
-                            st.error(f"🚨 La API rechazó la petición. Código: {res_historico.status_code}. Detalle: {res_historico.text}")
-                            res_historico = None
+                            st.error(f"La API rechazó la petición. Código: {res_historico.status_code}. Detalle: {res_historico.text}")
                     except Exception as e:
                         st.error(f"Error al generar heatmap: {e}")
                     
         except Exception as e:
             st.error(f"Error al procesar visualización: {e}")
-
 
 # ==============================================================================
 # 5. BUSCADOR DE TRAZABILIDAD

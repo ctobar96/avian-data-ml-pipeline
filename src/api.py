@@ -334,7 +334,7 @@ def historicos_sectores():
             mes_formateado = f"{int(r.anio)}-{int(r.mes):02d}"
             datos.append({
                 "anio": int(r.anio),
-                "mes": int(r.mes),
+                "mes_formateado": mes_formateado,
                 "lote_destino": r.lote_destino,
                 "cantidad": float(r.total_kg) if r.total_kg is not None else 0
             })
