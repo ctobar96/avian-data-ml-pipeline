@@ -428,7 +428,7 @@ if periodo_seleccionado:
                                 # 2. Lo mostramos usando st.dataframe, que soporta estilos de Pandas
                                 st.dataframe(
                                     pivot_heatmap, 
-                                    use_container_width=False,
+                                    use_container_width=True,
                                     height=600
                                 )
 
