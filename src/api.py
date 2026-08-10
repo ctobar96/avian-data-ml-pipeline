@@ -74,7 +74,8 @@ async def cargar_excel(file: UploadFile = File(...)):
             )
             
             # 2. Buscar los Insumos (Hijos)
-            df_hijos = df[(df['Tipo Trans'] == 'ISS-WO') & (df['Lote_Asignado'] == lote_actual)]
+            df_hijos = df[(df['Tipo Trans'] == 'ISS-WO') & (df['Lote_Asignado'] == lote_actual) 
+                          & (pd.to_datetime(df['Efectiva']).dt.date == fecha_actual)]
             
             for _, row_hijo in df_hijos.iterrows():
                 cantidad_consumida = abs(float(row_hijo['Cantidad']))
@@ -133,6 +134,20 @@ def buscar_lote(lote: str, fecha: str):
 
         if not produccion:
             return {"status": "error", "message": "No se encontraron registros para este lote y fecha en la base de datos."}
+        
+        # Agrupamos los MACROS para que no salgan nombres repetidos
+        macros_dic = {}
+        for m in produccion.macros:
+            macros_dic[m.materia_prima] = macros_dic.get(m.materia_prima, 0) + float(m.cantidad_consumida)
+        
+        macros_lista = [{"Materia Prima": k, "Cantidad (Kg)": v} for k, v in macros_dic.items()]
+
+        # Agrupamos los MICROS para que no salgan nombres repetidos
+        micros_dic = {}
+        for m in produccion.micros:
+            micros_dic[m.materia_prima] = micros_dic.get(m.materia_prima, 0) + float(m.cantidad_consumida)
+        
+        micros_lista = [{"Materia Prima": k, "Cantidad (Kg)": v} for k, v in micros_dic.items()]
 
         # Armamos el paquete JSON con el Padre y sus Hijos a través de la relación ORM
         return {
@@ -143,8 +158,8 @@ def buscar_lote(lote: str, fecha: str):
                 "descripcion": produccion.descripcion,
                 "cantidad_kg": produccion.cantidad_kg
             },
-            "macros": [{"Materia Prima": m.materia_prima, "Cantidad (Kg)": m.cantidad_consumida} for m in produccion.macros],
-            "micros": [{"Materia Prima": m.materia_prima, "Cantidad (Kg)": m.cantidad_consumida} for m in produccion.micros]
+            "macros": macros_lista,
+            "micros": micros_lista
         }
     finally:
         db.close()
