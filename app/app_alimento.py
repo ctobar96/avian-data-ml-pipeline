@@ -397,19 +397,38 @@ if periodo_seleccionado:
                                     aggfunc="sum",
                                     fill_value=0
                                 )
+
+                                formato_chileno = lambda x: f"{int(x):,}".replace(",", ".")
+
+                                # AJUSTE 2: Barra de Leyenda de Calor (HTML)
+                                min_val = pivot.values.min()
+                                max_val = pivot.values.max()
+
+                                st.markdown(
+                                    f"""
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #cccccc; margin-bottom: 5px;">
+                                        <span>Menor Producción: <b>{formato_chileno(min_val)} kg</b></span>
+                                        <span>Mayor Producción: <b>{formato_chileno(max_val)} kg</b></span>
+                                    </div>
+                                    <div style="height: 12px; width: 100%; border-radius: 6px; margin-bottom: 15px;
+                                         background: linear-gradient(to right, #440154, #31688e, #35b779, #fde725);">
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
                                 
                                 # Le decimos a Pandas que pinte el fondo de las celdas según su valor
                                 # axis=None asegura que el color se calcule usando TODA la tabla
                                 pivot_heatmap = (
                                     pivot.style
                                     .background_gradient(cmap="viridis", axis=None)
-                                    .format("{:,.0f}") # Formateamos con separador de miles y sin decimales
+                                    .format(formato_chileno) # Formateamos con separador de miles y sin decimales
                                 )
 
                                 # 2. Lo mostramos usando st.dataframe, que soporta estilos de Pandas
                                 st.dataframe(
                                     pivot_heatmap, 
-                                    use_container_width=True,
+                                    use_container_width=False,
                                     height=600
                                 )
 
