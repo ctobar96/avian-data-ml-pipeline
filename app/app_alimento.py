@@ -373,6 +373,59 @@ if periodo_seleccionado:
                         st.plotly_chart(fig_pie, use_container_width=True)
                 else:
                     st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
+
+                # =====================================================
+                # HEATMAP DE PRODUCCIÓN
+                # =====================================================
+                st.markdown("---")
+                st.subheader("Producción por sector y mes")
+                with st.spinner("Generando heatmap..."):
+                    try:
+                        # Llamamamos a la API para obtener los datos del heatmap
+                        res_historico = requests.get(f"{API_URL}/historicos-sectores/")
+
+                        if res_historico.status_code == 200:
+                            datos_historicos = res_historico.json().get("historico", [])
+                            df_heat = pd.DataFrame(datos_historicos)
+
+                            if not df_heat.empty:
+                                # Creamos la matriz pivot
+                                pivot =  df_heat.pivot(
+                                    values = "cantidad",
+                                    index = "lote_destino",
+                                    columns = "Mes",
+                                    aggfunc = "sum",
+                                    fill_value = 0
+                                )
+                                # Generar el mapa de calor 
+                                fig_heat = px.imshow(
+                                    pivot, 
+                                    color_continuous_scale="Viridis",
+                                    aspect="auto",
+                                    text_auto=".0f",
+                                    labels={
+                                        "x": "Mes",
+                                        "y": "Sector",
+                                        "color": "Producción (kg)"
+                                    }
+                                )
+                                fig_heat.update_layout(
+                                    height=500,
+                                    template="plotly_dark",
+                                    margin=dict(t=30, b=20, l=20, r=20)
+                                )
+
+                                # Mostrar en Streamlit
+                                st.plotly_chart(fig_heat, use_container_width=True)
+
+                            else:
+                                st.warning("⚠️ No hay suficientes datos históricos para el mapa de calor.")                                
+                        else:
+                            st.error(f"🚨 La API rechazó la petición. Código: {res_historico.status_code}. Detalle: {res_historico.text}")
+                            res_historico = None
+                    except Exception as e:
+                        st.error(f"Error al generar heatmap: {e}")
+                    
         except Exception as e:
             st.error(f"Error al procesar visualización: {e}")
 

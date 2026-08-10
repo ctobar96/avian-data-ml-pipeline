@@ -304,4 +304,40 @@ def tendencia_mensual():
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
-        
+
+
+# ==============================================================================
+# ENDPOINT 7: HEATMAP DE PRODUCCIÓN POR MES
+# ==============================================================================
+@app.get("/historicos-sectores/")
+def historicos_sectores():
+    db = SessionLocal()
+    try:
+        resultados = db.query(
+            extract('year', ProduccionAlimento.fecha_efectiva).label('anio'),
+            extract('month', ProduccionAlimento.fecha_efectiva).label('mes'),
+            ProduccionAlimento.lote_destino, 
+            func.sum(ProduccionAlimento.cantidad_kg).label('total_kg')
+        ).group_by(
+            extract('year', ProduccionAlimento.fecha_efectiva),
+            extract('month', ProduccionAlimento.fecha_efectiva),
+            ProduccionAlimento.lote_destino
+        ).order_by(
+            desc(extract('year', ProduccionAlimento.fecha_efectiva)),
+            desc(extract('month', ProduccionAlimento.fecha_efectiva)),
+            ProduccionAlimento.lote_destino
+        ).all()
+
+        datos = []
+        for r in resultados:
+        # Formateamos el mes a "YYYY-MM" para que se ordene bien en el gráfico
+            mes_formateado = f"{int(r.anio)}-{int(r.mes):02d}"
+            datos.append({
+                "anio": int(r.anio),
+                "mes": int(r.mes),
+                "lote_destino": r.lote_destino,
+                "cantidad": float(r.total_kg) if r.total_kg is not None else 0
+            })
+        return {"status": "success", "historico": datos}
+    finally:
+        db.close()
