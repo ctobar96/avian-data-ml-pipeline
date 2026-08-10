@@ -397,6 +397,16 @@ if periodo_seleccionado:
                                     aggfunc="sum",
                                     fill_value = 0
                                 )
+                                # Forzamos a que las filas y columnas sean texto puro
+                                pivot.index = pivot.index.astype(str)
+                                pivot.columns = pivot.columns.astype(str)
+
+                                # 👁️ MODO DEBUG: Esto te mostrará la tabla en pantalla. 
+                                # Si ves puros ceros aquí, el problema está en los datos. 
+                                # Si ves los kilos correctos, el gráfico se dibujará perfecto.
+                                st.write("🔍 Vista previa de la matriz (Debug):")
+                                st.dataframe(pivot)
+
                                 # Generar el mapa de calor 
                                 fig_heat = px.imshow(
                                     pivot, 
@@ -409,6 +419,10 @@ if periodo_seleccionado:
                                         "color": "Producción (kg)"
                                     }
                                 )
+                                # Le decimos a Plotly que respete las categorías de texto
+                                fig_heat.update_xaxes(type='category')
+                                fig_heat.update_yaxes(type='category')
+                                
                                 fig_heat.update_layout(
                                     height=500,
                                     template="plotly_dark",
