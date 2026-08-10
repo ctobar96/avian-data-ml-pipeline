@@ -429,7 +429,7 @@ if periodo_seleccionado:
                                         <span>Menor Producción: <b>{formato_chileno(min_val)} kg</b></span>
                                         <span>Mayor Producción: <b>{formato_chileno(max_val)} kg</b></span>
                                     </div>
-                                    <div style="height: 12px; width: 100%; border-radius: 6px; margin-bottom: 15px;
+                                    <div style="height: 15px; width: 100%; border-radius: 6px; margin-bottom: 15px;
                                          background: linear-gradient(to right, #440154, #31688e, #35b779, #fde725);">
                                     </div>
                                     """,
