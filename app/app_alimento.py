@@ -380,6 +380,7 @@ if periodo_seleccionado:
                 # ---------------------------------------------------------
                 st.markdown("---")
                 st.subheader("🌾 Consumo Detallado de Insumos")
+                st.write(f"🔍 DEBUG - El periodo seleccionado es: '{periodo_seleccionado}'")
 
                 # Extraemos Año y Mes del 'periodo_seleccionado' (Ej: Asumiendo que viene como "YYYY-MM")
                 # Extraemos solo los números usando una expresión regular segura
