@@ -361,7 +361,7 @@ def historicos_sectores():
 # ==============================================================================
 # ENDPOINT 8: CONSUMO MENSUAL DE INSUMOS (MACROS Y MICROS)
 # ==============================================================================
-@app.get("/consumo-insumos/")
+@app.get("/consumo-mensual/")
 def consumo_insumos(anio: int, mes: int):
     db = SessionLocal()
     try:
