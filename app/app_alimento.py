@@ -380,17 +380,28 @@ if periodo_seleccionado:
                 # ---------------------------------------------------------
                 st.markdown("---")
                 st.subheader("🌾 Consumo Detallado de Insumos")
-                st.write(f"🔍 DEBUG - El periodo seleccionado es: '{periodo_seleccionado}'")
 
-                # Extraemos Año y Mes del 'periodo_seleccionado' (Ej: Asumiendo que viene como "YYYY-MM")
-                # Extraemos solo los números usando una expresión regular segura
-                numeros = re.findall(r'\d+', str(periodo_seleccionado))
-                if len(numeros) >= 2:
-                    # Detectamos cuál es el año (el que tiene 4 dígitos)
-                    anio_consulta = int(numeros[0]) if len(numeros[0]) == 4 else int(numeros[1])
-                    mes_consulta = int(numeros[1]) if len(numeros[0]) == 4 else int(numeros[0])
-                    
-                    # Llamamos a tu endpoint de consumo mensual
+                # 1. Diccionario traductor de meses
+                meses_texto = {
+                    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
+                    "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
+                    "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
+                }
+                
+                texto_periodo = str(periodo_seleccionado).lower() 
+                
+                # 2. Buscamos el año y el mes
+                match_anio = re.search(r'\d{4}', texto_periodo)
+                anio_consulta = int(match_anio.group()) if match_anio else None
+                
+                mes_consulta = None
+                for nombre_mes, numero_mes in meses_texto.items():
+                    if nombre_mes in texto_periodo:
+                        mes_consulta = numero_mes
+                        break
+                
+                # 3. Llamada a la API
+                if anio_consulta and mes_consulta:
                     res_mensual = requests.get(f"{API_URL}/consumo-mensual/", params={"anio": anio_consulta, "mes": mes_consulta})
                     
                     if res_mensual.status_code == 200:
@@ -402,7 +413,6 @@ if periodo_seleccionado:
 
                             c_graf1, c_graf2 = st.columns(2)
 
-                            # GRÁFICO 1: MACROS
                             with c_graf1:
                                 st.markdown("**Macros Consumidos (Kg)**")
                                 if not df_macros.empty:
@@ -421,7 +431,6 @@ if periodo_seleccionado:
                                 else:
                                     st.info("No hay registros de Macros para este periodo.")
 
-                            # GRÁFICO 2: MICROS
                             with c_graf2:
                                 st.markdown("**Micros Consumidos (Kg)**")
                                 if not df_micros.empty:
@@ -444,9 +453,8 @@ if periodo_seleccionado:
                     else:
                         st.error("Error al consultar el consumo mensual a la API.")
                 else:
-                    st.warning("Formato de periodo no reconocido para filtrar insumos.")
-                
-                
+                    st.warning(f"No pudimos identificar el mes y año en el texto: {periodo_seleccionado}")
+                    
 
 
 
