@@ -356,3 +356,56 @@ def historicos_sectores():
         return {"status": "success", "historico": datos}
     finally:
         db.close()
+
+
+# ==============================================================================
+# ENDPOINT 8: CONSUMO MENSUAL DE INSUMOS (MACROS Y MICROS)
+# ==============================================================================
+@app.get("/consumo-insumos/")
+def consumo_insumos(anio: int, mes: int):
+    db = SessionLocal()
+    try:
+        # Buscamos los produccción que coincidadn con mes y año
+        produccion = db.query(ProduccionAlimento).filter(
+            extract('year', ProduccionAlimento.fecha_efectiva) == anio,
+            extract('month', ProduccionAlimento.fecha_efectiva) == mes
+        ).all()
+
+        if not produccion:
+            return {"status": "error", "message": f"No hay producciones registradas en {mes}/{anio}."}
+
+        # Sumamaos los macros de todo el mes
+        macros_dic = {}
+        for p in produccion:
+            for m in p.macros:
+                clae_macros = (m.numero_articulo, m.materia_prima)
+                macros_dic[clae_macros] = macros_dic.get(clae_macros, 0) + float(m.cantidad_consumida)
+        
+        macros_lista = [
+            {"Número Artículo": k[0], "Materia Prima": k[1], "Cantidad (Kg)": v} 
+            for k, v in sorted(macros_dic.items(), key=lambda item: item[1], reverse=True)
+        ]
+
+        #Sumamos los Micros de todo el mes
+        micros_dic = {}
+        for p in produccion:
+            for m in p.micros:
+                # 1. Creamos una llave compuesta
+                clave = (m.numero_articulo, m.materia_prima)
+
+                # 2. Sumamos usando esa llave compuesta
+                micros_dic[clave] = micros_dic.get(clave, 0) + float(m.cantidad_consumida)  
+        
+        micros_lista = [
+            {"Número Artículo": k[0], "Materia Prima": k[1], "Cantidad (Kg)": v} 
+            for k, v in sorted(micros_dic.items(), key=lambda item: item[1], reverse=True)
+        ]
+
+        return {
+            "status": "success",
+            "macros": macros_lista,
+            "micros": micros_lista
+        }
+
+    finally:
+        db.close()

@@ -374,6 +374,83 @@ if periodo_seleccionado:
                 else:
                     st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
 
+
+                # ---------------------------------------------------------
+                # PARTE C: GRÁFICOS DE MACROS Y MICROS (PLOTLY)
+                # ---------------------------------------------------------
+                st.markdown("---")
+                st.subheader("🌾 Consumo Detallado de Insumos")
+
+                # Extraemos Año y Mes del 'periodo_seleccionado' (Ej: Asumiendo que viene como "YYYY-MM")
+                # Extraemos solo los números usando una expresión regular segura
+                numeros = re.findall(r'\d+', str(periodo_seleccionado))
+                if len(numeros) >= 2:
+                    # Detectamos cuál es el año (el que tiene 4 dígitos)
+                    anio_consulta = int(numeros[0]) if len(numeros[0]) == 4 else int(numeros[1])
+                    mes_consulta = int(numeros[1]) if len(numeros[0]) == 4 else int(numeros[0])
+                    
+                    # Llamamos a tu endpoint de consumo mensual
+                    res_mensual = requests.get(f"{API_URL}/consumo-mensual/", params={"anio": anio_consulta, "mes": mes_consulta})
+                    
+                    if res_mensual.status_code == 200:
+                        datos_mensuales = res_mensual.json()
+                        
+                        if datos_mensuales.get("status") == "success":
+                            df_macros = pd.DataFrame(datos_mensuales["macros"])
+                            df_micros = pd.DataFrame(datos_mensuales["micros"])
+
+                            c_graf1, c_graf2 = st.columns(2)
+
+                            # GRÁFICO 1: MACROS
+                            with c_graf1:
+                                st.markdown("**Macros Consumidos (Kg)**")
+                                if not df_macros.empty:
+                                    fig_macros = px.bar(
+                                        df_macros, 
+                                        x="Cantidad (Kg)", 
+                                        y="Materia Prima", 
+                                        orientation='h', 
+                                        color="Cantidad (Kg)",
+                                        color_continuous_scale="viridis", 
+                                        text_auto='.2s',
+                                        hover_data=["Número Artículo"] 
+                                    )
+                                    fig_macros.update_layout(yaxis={'categoryorder':'total ascending'})
+                                    st.plotly_chart(fig_macros, use_container_width=True)
+                                else:
+                                    st.info("No hay registros de Macros para este periodo.")
+
+                            # GRÁFICO 2: MICROS
+                            with c_graf2:
+                                st.markdown("**Micros Consumidos (Kg)**")
+                                if not df_micros.empty:
+                                    fig_micros = px.bar(
+                                        df_micros, 
+                                        x="Cantidad (Kg)", 
+                                        y="Materia Prima", 
+                                        orientation='h',
+                                        color="Cantidad (Kg)",
+                                        color_continuous_scale="magma", 
+                                        text_auto='.2s',
+                                        hover_data=["Número Artículo"] 
+                                    )
+                                    fig_micros.update_layout(yaxis={'categoryorder':'total ascending'})
+                                    st.plotly_chart(fig_micros, use_container_width=True)
+                                else:
+                                    st.info("No hay registros de Micros para este periodo.")
+                        else:
+                            st.warning(datos_mensuales.get("message", "Error procesando insumos."))
+                    else:
+                        st.error("Error al consultar el consumo mensual a la API.")
+                else:
+                    st.warning("Formato de periodo no reconocido para filtrar insumos.")
+                
+                
+
+
+
+
+
                 # =====================================================
                 # HEATMAP DE PRODUCCIÓN
                 # =====================================================
