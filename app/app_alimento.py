@@ -451,7 +451,7 @@ if periodo_seleccionado:
                         else:
                             st.warning(datos_mensuales.get("message", "Error procesando insumos."))
                     else:
-                        st.error("Error al consultar el consumo mensual a la API.")
+                        st.error(f"Error de la API (Código {res_mensual.status_code}): {res_mensual.text}")                
                 else:
                     st.warning(f"No pudimos identificar el mes y año en el texto: {periodo_seleccionado}")
                     
