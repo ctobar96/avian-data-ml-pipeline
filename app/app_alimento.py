@@ -381,16 +381,14 @@ if periodo_seleccionado:
                 st.markdown("---")
                 st.subheader("🌾 Consumo Detallado de Insumos")
 
-                # 1. Diccionario traductor de meses
                 meses_texto = {
-                    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
-                    "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
-                    "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
+                "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
+                "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
+                "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
                 }
                 
                 texto_periodo = str(periodo_seleccionado).lower() 
                 
-                # 2. Buscamos el año y el mes
                 match_anio = re.search(r'\d{4}', texto_periodo)
                 anio_consulta = int(match_anio.group()) if match_anio else None
                 
@@ -400,7 +398,6 @@ if periodo_seleccionado:
                         mes_consulta = numero_mes
                         break
                 
-                # 3. Llamada a la API
                 if anio_consulta and mes_consulta:
                     res_mensual = requests.get(f"{API_URL}/consumo-mensual/", params={"anio": anio_consulta, "mes": mes_consulta})
                     
