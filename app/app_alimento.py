@@ -374,7 +374,7 @@ if periodo_seleccionado:
                 else:
                     st.error(f"🚨 La API rechazó la petición. Código: {res_resumen.status_code}. Detalle: {res_resumen.text}")
 
-
+                """
                 # ---------------------------------------------------------
                 # PARTE C: GRÁFICOS DE MACROS Y MICROS (PLOTLY)
                 # ---------------------------------------------------------
@@ -453,7 +453,7 @@ if periodo_seleccionado:
                     st.warning(f"No pudimos identificar el mes y año en el texto: {periodo_seleccionado}")
                     
 
-
+                    """
 
 
 
