@@ -41,6 +41,19 @@ def mostrar(periodo_seleccionado, API_URL):
                     col5.metric("📈 Var. vs Mes Ant.", f"+ {int(total_kg):,}".replace(',', '.') + " Kg", "100%")
                 else:
                     col5.metric("📈 Var. vs Mes Ant.", "0 Kg", None)
+
+                                # =====================================================
+                # ALERTAS AUTOMÁTICAS (Tu código integrado)
+                # =====================================================
+                # Solo mostramos alertas si realmente hay un mes anterior para comparar
+                # en vez de 10 se puede usar desviación estandar
+                if total_kg_anterior > 0:
+                    if var_pct > 10:
+                        st.success(f"🚀 ¡Excelente! La producción aumentó un {var_pct:.1f}% respecto al mes anterior.")
+                    elif var_pct < -10:
+                        st.error(f"⚠️ Atención: La producción disminuyó un {abs(var_pct):.1f}% respecto al mes anterior.")
+                    else:
+                        st.info(f"📊 La producción se mantuvo relativamente estable con una variación del {var_pct:.1f}%.")
                 
                 # Tendencia
                 st.markdown("---")
