@@ -24,15 +24,31 @@ col_actualizar, col_selector = st.columns(2)
 with col_actualizar:
     st.subheader("Actualización de Datos")
     with st.expander("⬆️ Actualizar base de datos con nuevo Excel"):
-        archivo_subido = st.file_uploader("Carga tu archivo de producción", type=["xls", "xlsx"])
+        
+        # 1. Creamos una llave dinámica en la memoria de Streamlit
+        if "uploader_key" not in st.session_state:
+            st.session_state.uploader_key = 0
+
+        # 2. Le asignamos esa llave al uploader
+        archivo_subido = st.file_uploader(
+            "Carga tu archivo de producción", 
+            type=["xls", "xlsx"],
+            key=f"excel_uploader_{st.session_state.uploader_key}"
+        )
+        
         if archivo_subido is not None:
-            if st.button("🚀 Inyectar a la base de datos"):
+            if st.button("Cargar a la base de datos"):
                 with st.spinner("Sincronizando..."):
                     try:
                         archivos = {"file": (archivo_subido.name, archivo_subido.getvalue(), "application/vnd.ms-excel")}
                         res = requests.post(f"{API_URL}/cargar-excel/", files=archivos)
+                        
                         if res.status_code == 200:
+                            # Mostramos el mensaje exacto de la API (Ej: "Se ingresaron 0 nuevos lotes")
                             st.success(res.json().get("message"))
+                            
+                            # 3. Cambiamos la llave para forzar al uploader a resetearse
+                            st.session_state.uploader_key += 1
                             st.rerun() 
                     except Exception as e:
                         st.error(f"Error de conexión: {e}")
