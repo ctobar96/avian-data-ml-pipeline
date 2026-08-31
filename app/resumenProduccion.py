@@ -83,6 +83,8 @@ def mostrar(periodo_seleccionado, API_URL):
                     sns.despine(left=True, bottom=False) 
                     st.pyplot(fig_line)
                     plt.close(fig_line)
+                else:
+                    st.info("No hay suficientes datos históricos para mostrar una tendencia.")
                 
                 # Sectores
                 st.markdown("---")
