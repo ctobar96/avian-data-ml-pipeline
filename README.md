@@ -161,8 +161,21 @@ CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 
-
 ## 👨‍💻 Autor
-**Cristian Tobar Morales** Magíster en Data Science Perfil de LinkedIn | Portafolio
+
+**Cristian Tobar Morales**
+*Data Scientist | Analytics Engineer*
+
+Especialista en análisis de datos, ingeniería de datos y desarrollo de soluciones basadas en datos. Este proyecto forma parte de mi portafolio técnico y tiene como objetivo demostrar la implementación de un pipeline de datos utilizando herramientas modernas de Data Engineering.
+
+### 🔗 Contacto
+* **LinkedIn:** [Cristian Tobar Morales](#)
+* **GitHub:** [@ctobar96](https://github.com/ctobar96)
+
+---
+
+## 📄 Licencia
+
+Este proyecto está disponible bajo la **Licencia MIT**.
 
 Nota: Los datos brutos (/data) están ignorados por motivos de confidencialidad comercial.
