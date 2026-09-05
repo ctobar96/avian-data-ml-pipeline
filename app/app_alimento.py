@@ -74,10 +74,8 @@ st.divider()
 # ==============================================================================
 st.markdown("""
     <style>
-        /* Apunta específicamente al texto dentro de las pestañas de Streamlit */
         .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
-            font-size: 22px; /* Cambia este número para hacerlas más grandes o pequeñas */
-            font-weight: bold; /* Pone el texto en negrita */
+            font-size: 22px
         }
     </style>
 """, unsafe_allow_html=True)
