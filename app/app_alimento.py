@@ -72,6 +72,16 @@ st.divider()
 # ==============================================================================
 # SISTEMA DE PESTAÑAS (Llamando a los módulos)
 # ==============================================================================
+st.markdown("""
+    <style>
+        /* Apunta específicamente al texto dentro de las pestañas de Streamlit */
+        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+            font-size: 22px; /* Cambia este número para hacerlas más grandes o pequeñas */
+            font-weight: bold; /* Pone el texto en negrita */
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 tab_produccion, tab_insumos, tab_trazabilidad = st.tabs([
     "🏭 Resumen de Producción", 
     "🌾 Consumo de Insumos", 
