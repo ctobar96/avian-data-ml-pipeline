@@ -85,6 +85,10 @@ st.markdown("""
             border-radius: 0.25rem;
             font-weight: 500;
             transition: all 0.2s ease-in-out;
+           /* 👇 AQUÍ CONTROLAS EL TAMAÑO 👇 */
+            font-size: 22px !important;      /* Tamaño de la letra */
+            padding: 12px 30px !important;   /* Espacio: Arriba/Abajo y Derecha/Izquierda */
+            width: 100%;                     /* Quita esta línea si no quieres que ocupe todo el ancho */ 
         }
         
         /* Modifica el diseño cuando el usuario pasa el mouse por encima (hover) */
