@@ -101,9 +101,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. Tu botón nativo ahora tendrá el aspecto outline-danger
-if st.button("Eliminar Registro"):
-    st.warning("¡Acción de peligro ejecutada!")
 
 tab_produccion, tab_insumos, tab_trazabilidad = st.tabs([
     "🏭 Resumen de Producción", 
