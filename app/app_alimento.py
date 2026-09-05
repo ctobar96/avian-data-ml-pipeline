@@ -72,13 +72,38 @@ st.divider()
 # ==============================================================================
 # SISTEMA DE PESTAÑAS (Llamando a los módulos)
 # ==============================================================================
+import streamlit as st
+
+# 1. Inyectar el CSS simulando el estilo de Bootstrap
 st.markdown("""
     <style>
-        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
-            font-size: 22px
+        /* Modifica el diseño base del botón de Streamlit */
+        div.stButton > button {
+            color: #dc3545 !important;
+            background-color: transparent !important;
+            border: 1px solid #dc3545 !important;
+            border-radius: 0.25rem;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        /* Modifica el diseño cuando el usuario pasa el mouse por encima (hover) */
+        div.stButton > button:hover {
+            color: #ffffff !important;
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+        }
+        
+        /* Evita el borde rojo extra que pone Streamlit al hacer clic */
+        div.stButton > button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5) !important;
         }
     </style>
 """, unsafe_allow_html=True)
+
+# 2. Tu botón nativo ahora tendrá el aspecto outline-danger
+if st.button("Eliminar Registro"):
+    st.warning("¡Acción de peligro ejecutada!")
 
 tab_produccion, tab_insumos, tab_trazabilidad = st.tabs([
     "🏭 Resumen de Producción", 
