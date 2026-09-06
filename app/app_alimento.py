@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-# Importamos tus nuevos módulos
+# Importamos tus módulos
 import resumenProduccion
 import consumoInsumos
 import auditoria
@@ -16,6 +16,20 @@ except:
 
 st.set_page_config(page_title="Dashboard Planta", page_icon="🏭", layout="wide")
 
+# ==============================================================================
+# MENÚ LATERAL (Navegación)
+# ==============================================================================
+st.sidebar.title("Navegación 🧭")
+vista_actual = st.sidebar.radio(
+    "Selecciona un módulo:",
+    ["🏭 Resumen de Producción", "🌾 Consumo de Insumos", "🔍 Auditoría por Lote"]
+)
+st.sidebar.markdown("---")
+st.sidebar.info("💡 Cambia de módulo aquí. Los datos cargarán mucho más rápido ya que solo se procesa la vista seleccionada.")
+
+# ==============================================================================
+# ENCABEZADO PRINCIPAL Y CONTROLES GLOBALES
+# ==============================================================================
 st.title("📊 Dashboard de Producción de Alimento")
 st.markdown("Monitorización del volumen de alimento fabricado y consumo de materias primas.")
 
@@ -44,7 +58,7 @@ with col_actualizar:
                         res = requests.post(f"{API_URL}/cargar-excel/", files=archivos)
                         
                         if res.status_code == 200:
-                            # Mostramos el mensaje exacto de la API (Ej: "Se ingresaron 0 nuevos lotes")
+                            # Mostramos el mensaje exacto de la API
                             st.success(res.json().get("message"))
                             
                             # 3. Cambiamos la llave para forzar al uploader a resetearse
@@ -70,40 +84,20 @@ with col_selector:
 st.divider()
 
 # ==============================================================================
-# SISTEMA DE PESTAÑAS (Llamando a los módulos)
+# RENDERIZADO CONDICIONAL DE VISTAS (Lazy Loading)
 # ==============================================================================
-import streamlit as st
-
-# 1. Inyectar el CSS simulando el estilo de Bootstrap
-st.markdown("""
-    <style>
-        /* Modifica el diseño base del botón de Streamlit */
-        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
-            font-size: 22px; /* Cambia este número para hacerlas más grandes o pequeñas */
-
-        }
-
-    </style>
-""", unsafe_allow_html=True)
-
-
-tab_produccion, tab_insumos, tab_trazabilidad = st.tabs([
-    "🏭 Resumen de Producción", 
-    "🌾 Consumo de Insumos", 
-    "🔍 Auditoría por Lote"
-])
-
-with tab_produccion:
+# Aquí Streamlit evaluará y ejecutará SÓLO el script de la vista que esté activa en el sidebar
+if vista_actual == "🏭 Resumen de Producción":
     resumenProduccion.mostrar(periodo_seleccionado, API_URL)
 
-with tab_insumos:
+elif vista_actual == "🌾 Consumo de Insumos":
     consumoInsumos.mostrar(periodo_seleccionado, API_URL)
 
-with tab_trazabilidad:
+elif vista_actual == "🔍 Auditoría por Lote":
     auditoria.mostrar(API_URL)
 
 # ==============================================================================
-# 6. FOOTER
+# FOOTER
 # ==============================================================================
 st.markdown("<br>", unsafe_allow_html=True)
 st.divider()
