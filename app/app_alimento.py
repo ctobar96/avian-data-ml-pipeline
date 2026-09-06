@@ -85,7 +85,7 @@ st.markdown("""
             border-radius: 0.3rem;
             font-weight: bold;
             transition: all 0.2s ease-in-out;
-            font-size: 22px !important;      /* Tamaño de la letra */
+            font-size: 30px !important;      /* Tamaño de la letra */
             padding: 12px 30px !important;   /* Espacio: Arriba/Abajo y Derecha/Izquierda */
             width: 100%;                     /* Quita esta línea si no quieres que ocupe todo el ancho */ 
         }
