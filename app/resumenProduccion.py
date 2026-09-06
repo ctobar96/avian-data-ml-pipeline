@@ -55,35 +55,104 @@ def mostrar(periodo_seleccionado, API_URL):
                     else:
                         st.info(f"📊 La producción se mantuvo relativamente estable con una variación del {var_pct:.1f}%.")
                 
-                # Tendencia
+ # =====================================================
+                # TENDENCIA MENSUAL
+                # =====================================================
                 st.markdown("---")
                 st.subheader("📈 Evolución Mensual")
-                res_tendencia = requests.get(f"{API_URL}/tendencia-mensual/")
-                if res_tendencia.status_code == 200 and res_tendencia.json().get("tendencia"):
-                    df_mensual = pd.DataFrame(res_tendencia.json().get("tendencia"))
-                    df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"].astype(str).str.replace(",", "", regex=False), errors="coerce").fillna(0)
 
-                    sns.set_theme(style="white")
-                    fig_line, ax_line = plt.subplots(figsize=(16, 5))
-                    fig_line.patch.set_alpha(0.0) 
-                    ax_line.patch.set_alpha(0.0)
-                    plt.rc('axes', edgecolor='#666666', labelcolor='#cccccc')
-                    plt.rc('xtick', color='#cccccc')
-                    plt.rc('ytick', color='#cccccc')
-                    
-                    sns.lineplot(data=df_mensual, x="mes", y="Cantidad", marker="o", color="#00d4ff", linewidth=3, markersize=10, ax=ax_line)
-                    ax_line.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x/1000000:.2f}M" if x>=1000000 else (f"{x/1000:.0f}K" if x>=1000 else str(int(x)))))
-                    
-                    for _, row in df_mensual.iterrows():
-                        ax_line.annotate(f"{int(row['Cantidad']):,}".replace(",", "."), (row['mes'], row['Cantidad']), ha='center', va='bottom', fontsize=11, fontweight='bold', color="white", xytext=(0, 15), textcoords='offset points')
+                with st.spinner("Cargando historial de producción..."):
+                    try:
+                        res_tendencia = requests.get(f"{API_URL}/tendencia-mensual/")
+                        
+                        if res_tendencia.status_code == 200:
+                            datos_tendencia = res_tendencia.json().get("tendencia", [])
+                            
+                            if datos_tendencia:
+                                df_mensual = pd.DataFrame(datos_tendencia)
+                                
+                                # Limpieza segura para garantizar que son números
+                                df_mensual["Cantidad"] = df_mensual["Cantidad"].astype(str).str.replace(",", "", regex=False)
+                                df_mensual["Cantidad"] = pd.to_numeric(df_mensual["Cantidad"], errors="coerce").fillna(0)
 
-                    ax_line.set_ylabel("Total Alimento (Kg)", labelpad=15, fontsize=11)
-                    ax_line.set_xlabel("") 
-                    plt.grid(axis='y', linestyle='--', alpha=0.15, color='#ffffff')
-                    sns.despine(left=True, bottom=False) 
-                    st.pyplot(fig_line)
-                    plt.close(fig_line)
-                else:
+                                # ===========================================================
+                                # TU ESTILO DE GRÁFICO (Seaborn)
+                                # ===========================================================
+                                sns.set_theme(style="white")
+                                fig_line, ax_line = plt.subplots(figsize=(16, 5))
+                                
+                                # 1. Reiniciamos estilos previos y preparamos colores para fondo oscuro
+                                plt.rcdefaults()
+                                plt.rc('axes', edgecolor='#666666', labelcolor='#cccccc')
+                                plt.rc('xtick', color='#cccccc')
+                                plt.rc('ytick', color='#cccccc')
+                                
+                                # 2. Creamos figura con FONDO TRANSPARENTE
+                                fig_line, ax_line = plt.subplots(figsize=(16, 5))
+                                fig_line.patch.set_alpha(0.0) 
+                                ax_line.patch.set_alpha(0.0)
+                                
+                                # Trazamos la línea con marcadores grandes (puntos)
+                                sns.lineplot(
+                                    data=df_mensual, x="mes", y="Cantidad", 
+                                    marker="o", color="#00d4ff", linewidth=3, 
+                                    markersize=10, ax=ax_line
+                                )
+
+                                # 1. Formateador de eje Y (Tu código exacto)
+                                
+                                def formato_abreviado(x, pos):
+                                    if x >= 1000000:
+                                        return f"{x/1000000:.2f}M" # 2.25M
+                                    elif x >= 1000:
+                                        return f"{x/1000:.0f}K" # 2.3K
+                                    else:
+                                        return str(int(x)) # 900
+                                ax_line.yaxis.set_major_formatter(FuncFormatter(formato_abreviado))
+                                
+                                # Aseguramos que el gráfico empiece en 0 y le damos un 15% de espacio arriba para que quepan los números
+                                min_val = df_mensual["Cantidad"].min()
+                                max_val = df_mensual["Cantidad"].max()
+
+                                # Le damos un pequeño margen arriba y abajo
+                                margen = (max_val - min_val) * 0.4 if max_val != min_val else max_val * 0.1
+                                ax_line.set_ylim(min_val - margen, max_val + margen * 1.5)
+
+
+                    
+                                # 2. Anotaciones sobre los puntos (Equivalente a tu loop de patches)
+                                for index, row in df_mensual.iterrows():
+                                    label = f"{int(row['Cantidad']):,}".replace(",", ".")
+                                    ax_line.annotate(
+                                        label, 
+                                        (row['mes'], row['Cantidad']), 
+                                        ha='center', va='bottom', 
+                                        fontsize=11, fontweight='bold', color="white", # Letra blanca
+                                        xytext=(0, 15), textcoords='offset points'
+                                )
+
+                                # 3. Estilos de grilla y limpieza (Tu código exacto)
+                                ax_line.set_ylabel("Total Alimento (Kg)", labelpad=15, fontsize=11)
+                                ax_line.set_xlabel("") # Ocultamos el título "mes" para que quede más limpio
+                                
+                                # Grilla horizontal muy suave para no distraer
+                                plt.grid(axis='y', linestyle='--', alpha=0.15, color='#ffffff')
+                                sns.despine(left=True, bottom=False) # Eliminamos bordes innecesarios
+                                plt.tight_layout()
+                             
+                                st.pyplot(fig_line)
+                                plt.close(fig_line)
+                                
+                                # Restauramos el estilo blanco por si el gráfico de barras que sigue lo necesita
+                                sns.set_theme(style="white")
+                                
+                            else:
+                                st.info("No hay suficientes datos históricos para mostrar una tendencia.")
+                        else:
+                            st.error("Error en la API al obtener la tendencia.")
+                            
+                    except Exception as e:
+                        st.error(f"Error de conexión: {e}")
                     st.info("No hay suficientes datos históricos para mostrar una tendencia.")
                 
                 # Sectores
