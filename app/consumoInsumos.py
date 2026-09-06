@@ -45,7 +45,7 @@ def mostrar(periodo_seleccionado, API_URL):
             else:
                 st.warning("Error procesando insumos.")
         else:
-            st.error("Error conectando a la API de consumos.")
+            st.error(f"Error del Backend (Código {res_mensual.status_code}): {res_mensual.text}")
 
 def renderizar_grafico(df, titulo, escala_color):
     st.markdown(f"**{'🌾' if titulo=='Macros' else '🧪'} {titulo} Consumidos (Kg)**")
