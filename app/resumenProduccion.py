@@ -25,7 +25,7 @@ def mostrar(periodo_seleccionado, API_URL):
                 sector_top = df_grafico.sort_values(by="Cantidad", ascending=False).iloc[0]['Lote'] if not df_grafico.empty else "Sin datos"
 
                 # KPIs
-                st.subheader("📌 Indicadores Generales")
+                st.subheader("Indicadores Generales")
                 col1, col2, col3, col4, col5 = st.columns(5)
                 col1.metric("🗓️ Periodo", mes_actual)
                 col2.metric("⚖️ Total Alimento (Kg)", f"{int(total_kg):,}".replace(',', '.'))
@@ -59,7 +59,7 @@ def mostrar(periodo_seleccionado, API_URL):
                 # TENDENCIA MENSUAL
                 # =====================================================
                 st.markdown("---")
-                st.subheader("📈 Evolución Mensual")
+                st.subheader("Evolución Mensual")
 
                 with st.spinner("Cargando historial de producción..."):
                     try:
@@ -167,7 +167,7 @@ def mostrar(periodo_seleccionado, API_URL):
                     # COLUMNA 1: DISTRIBUCIÓN (BARRAS HORIZONTALES)
                     # ==========================================
                     with col_graf1:
-                        st.subheader("🏭 Distribución de Producción por Sector") 
+                        st.subheader("Distribución de Producción por Sector") 
                             
                         # 1. ORDENAR LOS DATOS (Mayor a menor) - Ahora es 100% confiable numéricamente
                         df_grafico = df_grafico.sort_values(by="Cantidad", ascending=False)
@@ -231,7 +231,7 @@ def mostrar(periodo_seleccionado, API_URL):
                     # COLUMNA 2: PARTICIPACIÓN (DONA PLOTLY)
                     # ==========================================
                     with col_graf2:
-                        st.subheader("📊 Participación (Top 10)")
+                        st.subheader("Participación (Top 10)")
                         
                         # 1. Hacemos una copia aislada de las 10 primeras filas (ya ordenadas por el gráfico de barras)
                         top10 = df_grafico.head(10).copy().reset_index(drop=True) 
