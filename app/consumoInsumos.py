@@ -1,20 +1,13 @@
 import streamlit as st
 import pandas as pd
 import requests
-import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 import re
 
 def mostrar(periodo_seleccionado, API_URL):
     if not periodo_seleccionado:
         return
-
-    tipo_ver = st.radio(
-        "Filtro de Categoría:",
-        options=["Mostrar Ambos", "Solo Macros", "Solo Micros"],
-        horizontal=True,
-        label_visibility="collapsed"
-    )
-    st.markdown("<br>", unsafe_allow_html=True) 
 
     meses_texto = {
         "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6, 
@@ -34,24 +27,51 @@ def mostrar(periodo_seleccionado, API_URL):
                 df_macros = pd.DataFrame(datos_mensuales["macros"])
                 df_micros = pd.DataFrame(datos_mensuales["micros"])
 
-                if tipo_ver == "Mostrar Ambos":
-                    c_graf1, c_graf2 = st.columns(2)
-                    with c_graf1: renderizar_grafico(df_macros, "Macros", "viridis")
-                    with c_graf2: renderizar_grafico(df_micros, "Micros", "magma")
-                elif tipo_ver == "Solo Macros":
+                # Despliegue directo en la misma pestaña dividiendo en 2 columnas
+                c_graf1, c_graf2 = st.columns(2)
+                with c_graf1: 
                     renderizar_grafico(df_macros, "Macros", "viridis")
-                elif tipo_ver == "Solo Micros":
+                with c_graf2: 
                     renderizar_grafico(df_micros, "Micros", "magma")
             else:
                 st.warning("Error procesando insumos.")
         else:
             st.error(f"Error del Backend (Código {res_mensual.status_code}): {res_mensual.text}")
 
-def renderizar_grafico(df, titulo, escala_color):
+def renderizar_grafico(df, titulo, paleta):
     st.markdown(f"**{'🌾' if titulo=='Macros' else '🧪'} {titulo} Consumidos (Kg)**")
     if not df.empty:
-        fig = px.bar(df, x="Cantidad (Kg)", y="Materia Prima", orientation='h', color="Cantidad (Kg)", color_continuous_scale=escala_color, text_auto='.2s', hover_data=["Número Artículo"])
-        fig.update_layout(yaxis={'categoryorder':'total ascending'}, coloraxis_showscale=False)
-        st.plotly_chart(fig, use_container_width=True)
+        # Ordenar de mayor a menor para mantener la legibilidad
+        df = df.sort_values(by="Cantidad (Kg)", ascending=False)
+        
+        # Crear la figura y los ejes para matplotlib/seaborn
+        fig, ax = plt.subplots(figsize=(6, 4))
+        
+        sns.barplot(
+            data=df, 
+            x="Cantidad (Kg)", 
+            y="Materia Prima", 
+            hue="Materia Prima", 
+            palette=paleta, 
+            legend=False,
+            ax=ax
+        )
+        
+        # Limpieza visual del gráfico
+        ax.set_ylabel("")
+        ax.set_xlabel("Cantidad (Kg)")
+        sns.despine()
+        
+        # Agregar los valores numéricos al final de cada barra
+        for p in ax.patches:
+            width = p.get_width()
+            if width > 0:
+                ax.text(width + (width * 0.02), 
+                        p.get_y() + p.get_height() / 2, 
+                        f'{width:.1f}', 
+                        ha='left', va='center', fontsize=9)
+                    
+        # Renderizar en Streamlit
+        st.pyplot(fig)
     else:
         st.info(f"No hay registros de {titulo}.")
