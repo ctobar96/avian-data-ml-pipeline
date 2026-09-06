@@ -80,7 +80,7 @@ st.markdown("""
         /* Modifica el diseño base del botón de Streamlit */
         .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
             font-size: 22px; /* Cambia este número para hacerlas más grandes o pequeñas */
-            font-weight: bold; /* Pone el texto en negrita */
+
         }
 
     </style>
