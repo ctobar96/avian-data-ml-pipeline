@@ -146,8 +146,7 @@ def mostrar(periodo_seleccionado, API_URL):
                                 # Restauramos el estilo blanco por si el gráfico de barras que sigue lo necesita
                                 sns.set_theme(style="white")
                                 
-                            else:
-                                st.info("No hay suficientes datos históricos para mostrar una tendencia.")
+                            
                         else:
                             st.error("Error en la API al obtener la tendencia.")
                             
